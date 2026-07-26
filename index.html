@@ -1,77 +1,183 @@
 <!DOCTYPE html>
 <html lang="pt-BR"><head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Finanças">
+<meta name="apple-mobile-web-app-title" content="WI Finance">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSIjMGYyMjQ2Ii8+PHRleHQgeD0iOTAiIHk9IjExNSIgZm9udC1zaXplPSI3MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iIzM4YmRmOCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+V0k8L3RleHQ+PC9zdmc+">
-<title>Finanças do casal</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxYjNhNmIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwYTBlMWEiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQyIiBmaWxsPSJ1cmwoI2cpIi8+PHRleHQgeD0iOTAiIHk9IjExOCIgZm9udC1zaXplPSI2NCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXdlaWdodD0iODAwIiBmaWxsPSIjMzhiZGY4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5XSTwvdGV4dD48L3N2Zz4=">
+<title>WI Finance</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100vh;padding:14px}
-.wrap{max-width:440px;margin:0 auto}
-.card{background:radial-gradient(120% 80% at 50% 0%,#141d33,#0a0e1a 60%);border-radius:22px;padding:20px;border:1px solid rgba(56,189,248,.18);box-shadow:0 20px 60px rgba(0,0,0,.5)}
-.lbl{font-size:10.5px;color:#6b7a99;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:9px}
-@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.card>*{animation:rise .5s ease both}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100vh;padding:16px}
+.wrap{max-width:460px;margin:0 auto}
+.card{background:radial-gradient(120% 80% at 50% 0%,#141d33,#0a0e1a 62%);border-radius:26px;padding:24px;border:1px solid rgba(56,189,248,.2);box-shadow:0 24px 70px rgba(0,0,0,.55)}
+.lbl{font-size:12px;color:#7d8aa5;letter-spacing:1.4px;text-transform:uppercase;margin-bottom:12px;font-weight:600}
+.click{cursor:pointer;transition:transform .12s,border-color .12s}
+.click:active{transform:scale(.985)}
+.chev{color:#5a6785;font-size:19px;font-weight:400}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.pg{animation:rise .35s ease both}
+.hidden{display:none}
+.back{display:flex;align-items:center;gap:8px;color:#7d8aa5;font-size:15px;margin-bottom:20px;cursor:pointer;font-weight:500}
+.logo{width:52px;height:52px;border-radius:15px;background:linear-gradient(145deg,#1b3a6b,#0a0e1a);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:19px;color:#38bdf8;box-shadow:0 0 22px rgba(56,189,248,.3);border:1px solid rgba(56,189,248,.3);letter-spacing:1px}
 </style></head>
 <body><div class="wrap"><div class="card">
 
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-    <div style="display:flex;align-items:center;gap:11px;">
-      <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(145deg,#1b3a6b,#0f2246);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#38bdf8;box-shadow:0 0 16px rgba(56,189,248,.25);">WI</div>
-      <div><div style="font-size:14.5px;font-weight:600;color:#eaf0fa;">Finanças do casal</div><div style="font-size:10.5px;color:#6b7a99;">atualizado 26 de julho</div></div>
+<!-- ===== HOME ===== -->
+<div id="home" class="pg">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:26px;">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div class="logo">WI</div>
+      <div><div style="font-size:22px;font-weight:800;color:#eaf0fa;letter-spacing:-.3px;">WI Finance</div><div style="font-size:12px;color:#6b7a99;margin-top:2px;text-transform:capitalize;">domingo, 26 de julho · 20:36</div></div>
     </div>
-    <span style="width:7px;height:7px;border-radius:50%;background:#38bdf8;box-shadow:0 0 10px #38bdf8;"></span>
+    <span style="width:9px;height:9px;border-radius:50%;background:#38bdf8;box-shadow:0 0 12px #38bdf8;"></span>
   </div>
 
-  <div style="background:linear-gradient(150deg,rgba(56,189,248,.12),rgba(34,211,238,.03));border:1px solid rgba(56,189,248,.22);border-radius:18px;padding:22px;margin-bottom:14px;display:flex;align-items:center;gap:20px;">
-    <div style="position:relative;width:92px;height:92px;flex-shrink:0;">
-      <svg viewBox="0 0 100 100" style="width:100%;height:100%;transform:rotate(-90deg);"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(56,189,248,.1)" stroke-width="8"/><circle cx="50" cy="50" r="42" fill="none" stroke="#38bdf8" stroke-width="8" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264" style="filter:drop-shadow(0 0 4px rgba(56,189,248,.6));"/></svg>
-      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:20px;font-weight:800;color:#38bdf8;">0%</div><div style="font-size:9px;color:#6b7a99;">meta invest.</div></div>
+  <div class="click" onclick="abre('divida')" style="background:linear-gradient(150deg,rgba(56,189,248,.14),rgba(34,211,238,.03));border:1px solid rgba(56,189,248,.24);border-radius:20px;padding:26px;margin-bottom:16px;display:flex;align-items:center;gap:22px;">
+    <div style="position:relative;width:104px;height:104px;flex-shrink:0;">
+      <svg viewBox="0 0 100 100" style="width:100%;height:100%;transform:rotate(-90deg);"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(56,189,248,.1)" stroke-width="9"/><circle cx="50" cy="50" r="42" fill="none" stroke="#38bdf8" stroke-width="9" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264" style="filter:drop-shadow(0 0 5px rgba(56,189,248,.6));"/></svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:26px;font-weight:800;color:#38bdf8;">0%</div><div style="font-size:10px;color:#6b7a99;">meta invest.</div></div>
     </div>
-    <div><div style="font-size:11px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Sobra do mês</div>
-      <div style="font-size:31px;font-weight:800;letter-spacing:-1px;line-height:1;color:#eaf0fa;">-R$ 42.611</div>
-      <div style="font-size:11px;color:#6b7a99;margin-top:6px;">investido R$ 0 de R$ 0</div></div>
+    <div><div style="font-size:12.5px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;">Sobra do mês</div>
+      <div style="font-size:40px;font-weight:900;letter-spacing:-1.5px;line-height:1;color:#eaf0fa;">-R$ 34.349</div>
+      <div style="font-size:12.5px;color:#6b7a99;margin-top:8px;">investido R$ 0 de R$ 0</div></div>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;">
-    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:14px;padding:14px;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.8px;">Entrou no mês</div><div style="font-size:19px;font-weight:700;margin-top:4px;color:#eaf0fa;">R$ 0</div></div>
-    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:14px;padding:14px;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.8px;">Saiu no mês</div><div style="font-size:19px;font-weight:700;margin-top:4px;color:#eaf0fa;">R$ 43k</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:18px;"><div style="font-size:11.5px;color:#6b7a99;text-transform:uppercase;letter-spacing:.8px;">Entrou no mês</div><div style="font-size:26px;font-weight:800;margin-top:6px;color:#eaf0fa;">R$ 0</div></div>
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:18px;"><div style="font-size:11.5px;color:#6b7a99;text-transform:uppercase;letter-spacing:.8px;">Saiu no mês</div><div style="font-size:26px;font-weight:800;margin-top:6px;color:#eaf0fa;">R$ 34k</div></div>
   </div>
 
-  <div style="background:rgba(255,255,255,.02);border-radius:12px;padding:11px 14px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;">
-    <span style="font-size:11.5px;color:#7d8aa5;text-transform:uppercase;letter-spacing:.8px;">Posição geral hoje</span>
-    <span style="font-size:16px;font-weight:800;color:#34d399;">R$ 199</span>
+  <div class="click" onclick="abre('invest')" style="background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.15);border-radius:14px;padding:16px 18px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:13px;color:#7d8aa5;text-transform:uppercase;letter-spacing:.8px;">Investimentos</span>
+    <span style="display:flex;align-items:center;gap:10px;"><span style="font-size:19px;font-weight:800;color:#38bdf8;">R$ 0</span><span class="chev">›</span></span>
+  </div>
+
+  <div class="click" onclick="abre('divida')" style="background:rgba(255,255,255,.02);border-radius:14px;padding:16px 18px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:13px;color:#7d8aa5;text-transform:uppercase;letter-spacing:.8px;">Posição geral hoje</span>
+    <span style="display:flex;align-items:center;gap:10px;"><span style="font-size:20px;font-weight:800;color:#34d399;">R$ 199</span><span class="chev">›</span></span>
   </div>
 
   <div class="lbl">Contas correntes</div>
-  <div style="margin-bottom:20px;"><div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;">
-      <span style="font-size:13.5px;color:#dbe3f0;">Conta Itaú Wes · Itaú</span>
-      <span style="display:flex;align-items:center;gap:8px;"><span style="font-size:13.5px;font-weight:700;color:#34d399;">R$ 199</span><span style="font-size:9px;background:rgba(52,211,153,.13);color:#34d399;padding:2px 8px;border-radius:99px;">azul</span></span></div></div>
+  <div class="click" onclick="abre('contas')" style="margin-bottom:24px;"><div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;">
+      <span style="font-size:16px;color:#dbe3f0;">Conta Itaú Wes · Itaú</span>
+      <span style="display:flex;align-items:center;gap:9px;"><span style="font-size:16px;font-weight:700;color:#34d399;">R$ 199</span><span style="font-size:11px;background:rgba(52,211,153,.13);color:#34d399;padding:3px 10px;border-radius:99px;">azul</span></span></div>
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:6px;color:#5a6785;font-size:13px;margin-top:10px;">ver detalhes <span class="chev">›</span></div></div>
 
   <div class="lbl">Cartões · faturas</div>
-  <div style="margin-bottom:20px;"><div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:13px;color:#aab6cc;">Cartão Iara (dia 05) · dia 05</span><span style="font-size:13px;font-weight:600;color:#eaf0fa;">-</span></div><div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:13px;color:#aab6cc;">Cartão Iara (dia 20) · dia 20</span><span style="font-size:13px;font-weight:600;color:#eaf0fa;">-</span></div><div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:13px;color:#aab6cc;">Cartão Itaú 7046 - Wes · dia 17</span><span style="font-size:13px;font-weight:600;color:#eaf0fa;">-</span></div><div style="display:flex;justify-content:space-between;padding:10px 0;"><span style="font-size:13px;color:#aab6cc;">Cartão XP - Wes · dia 05</span><span style="font-size:13px;font-weight:600;color:#eaf0fa;">-</span></div></div>
+  <div class="click" onclick="abre('cartoes')" style="margin-bottom:24px;"><div style="display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:15px;color:#aab6cc;">Cartão Iara (dia 05) · dia 05</span><span style="font-size:15px;font-weight:600;color:#eaf0fa;">-</span></div><div style="display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:15px;color:#aab6cc;">Cartão Iara (dia 20) · dia 20</span><span style="font-size:15px;font-weight:600;color:#eaf0fa;">-</span></div><div style="display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:15px;color:#aab6cc;">Cartão Itaú 7046 - Wes · dia 17</span><span style="font-size:15px;font-weight:600;color:#eaf0fa;">-</span></div><div style="display:flex;justify-content:space-between;padding:13px 0;"><span style="font-size:15px;color:#aab6cc;">Cartão XP - Wes · dia 05</span><span style="font-size:15px;font-weight:600;color:#eaf0fa;">-</span></div>
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:6px;color:#5a6785;font-size:13px;margin-top:10px;">ver detalhes <span class="chev">›</span></div></div>
 
   <div class="lbl">Gastos do mês por categoria</div>
-  <div style="margin-bottom:20px;"><div style="display:flex;align-items:center;gap:16px;">
-    <div style="position:relative;width:120px;height:120px;flex-shrink:0;">
-      <svg viewBox="0 0 42 42" style="width:100%;height:100%;"><circle cx="21" cy="21" r="15.9" fill="none" stroke="#1a2540" stroke-width="5.5"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#38bdf8" stroke-width="5.5" stroke-dasharray="53.8 100" stroke-dashoffset="0.0" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#22d3ee" stroke-width="5.5" stroke-dasharray="17.0 100" stroke-dashoffset="-53.8" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#818cf8" stroke-width="5.5" stroke-dasharray="6.8 100" stroke-dashoffset="-70.8" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#c084fc" stroke-width="5.5" stroke-dasharray="6.6 100" stroke-dashoffset="-77.6" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#5eead4" stroke-width="5.5" stroke-dasharray="5.1 100" stroke-dashoffset="-84.2" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#556085" stroke-width="5.5" stroke-dasharray="10.8 100" stroke-dashoffset="-89.2" transform="rotate(-90 21 21)"/></svg>
-      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:15px;font-weight:800;color:#eaf0fa;">R$ 43k</div><div style="font-size:8px;color:#6b7a99;">total</div></div>
+  <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:20px;padding:24px 20px;margin-bottom:24px;"><div style="display:flex;flex-direction:column;align-items:center;gap:22px;">
+    <div style="position:relative;width:200px;height:200px;">
+      <svg viewBox="0 0 42 42" style="width:100%;height:100%;"><circle cx="21" cy="21" r="15.9" fill="none" stroke="#141d33" stroke-width="6.5"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#38bdf8" stroke-width="6.5" stroke-dasharray="53.7 100" stroke-dashoffset="0.0" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#22d3ee" stroke-width="6.5" stroke-dasharray="14.7 100" stroke-dashoffset="-53.7" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#818cf8" stroke-width="6.5" stroke-dasharray="8.4 100" stroke-dashoffset="-68.4" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#c084fc" stroke-width="6.5" stroke-dasharray="6.2 100" stroke-dashoffset="-76.8" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#5eead4" stroke-width="6.5" stroke-dasharray="4.5 100" stroke-dashoffset="-83.0" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#f0abfc" stroke-width="6.5" stroke-dasharray="12.5 100" stroke-dashoffset="-87.5" transform="rotate(-90 21 21)"/></svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:30px;font-weight:800;color:#eaf0fa;">R$ 34k</div><div style="font-size:12px;color:#6b7a99;letter-spacing:.5px;">total no mês</div></div>
     </div>
-    <div style="flex:1;font-size:11.5px;color:#aab6cc;"><span style="display:block;margin-bottom:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#38bdf8;margin-right:7px;"></span>Outros <b style="color:#eaf0fa;">54%</b></span><span style="display:block;margin-bottom:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#22d3ee;margin-right:7px;"></span>Casa/Moradia <b style="color:#eaf0fa;">17%</b></span><span style="display:block;margin-bottom:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#818cf8;margin-right:7px;"></span>Carro <b style="color:#eaf0fa;">7%</b></span><span style="display:block;margin-bottom:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#c084fc;margin-right:7px;"></span>Lazer <b style="color:#eaf0fa;">7%</b></span><span style="display:block;margin-bottom:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#5eead4;margin-right:7px;"></span>Mercado <b style="color:#eaf0fa;">5%</b></span><span style="display:block;margin-bottom:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#556085;margin-right:7px;"></span>Outros <b style="color:#eaf0fa;">11%</b></span></div></div></div>
+    <div style="width:100%;"><div data-cat="Outros" onclick="abreCat(this.dataset.cat)" style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+    <span style="display:flex;align-items:center;"><span style="display:inline-block;width:11px;height:11px;border-radius:4px;background:#38bdf8;margin-right:10px;"></span><span style="font-size:15px;color:#dbe3f0;">Outros</span></span>
+    <span style="display:flex;align-items:center;gap:9px;"><b style="font-size:15px;color:#eaf0fa;">54%</b><span style="color:#5a6785;font-size:16px;">›</span></span></div><div data-cat="Casa/Moradia" onclick="abreCat(this.dataset.cat)" style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+    <span style="display:flex;align-items:center;"><span style="display:inline-block;width:11px;height:11px;border-radius:4px;background:#22d3ee;margin-right:10px;"></span><span style="font-size:15px;color:#dbe3f0;">Casa/Moradia</span></span>
+    <span style="display:flex;align-items:center;gap:9px;"><b style="font-size:15px;color:#eaf0fa;">15%</b><span style="color:#5a6785;font-size:16px;">›</span></span></div><div data-cat="Carro" onclick="abreCat(this.dataset.cat)" style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+    <span style="display:flex;align-items:center;"><span style="display:inline-block;width:11px;height:11px;border-radius:4px;background:#818cf8;margin-right:10px;"></span><span style="font-size:15px;color:#dbe3f0;">Carro</span></span>
+    <span style="display:flex;align-items:center;gap:9px;"><b style="font-size:15px;color:#eaf0fa;">8%</b><span style="color:#5a6785;font-size:16px;">›</span></span></div><div data-cat="Mercado" onclick="abreCat(this.dataset.cat)" style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+    <span style="display:flex;align-items:center;"><span style="display:inline-block;width:11px;height:11px;border-radius:4px;background:#c084fc;margin-right:10px;"></span><span style="font-size:15px;color:#dbe3f0;">Mercado</span></span>
+    <span style="display:flex;align-items:center;gap:9px;"><b style="font-size:15px;color:#eaf0fa;">6%</b><span style="color:#5a6785;font-size:16px;">›</span></span></div><div data-cat="Lazer" onclick="abreCat(this.dataset.cat)" style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+    <span style="display:flex;align-items:center;"><span style="display:inline-block;width:11px;height:11px;border-radius:4px;background:#5eead4;margin-right:10px;"></span><span style="font-size:15px;color:#dbe3f0;">Lazer</span></span>
+    <span style="display:flex;align-items:center;gap:9px;"><b style="font-size:15px;color:#eaf0fa;">4%</b><span style="color:#5a6785;font-size:16px;">›</span></span></div><div data-cat="Outros+" onclick="abreCat(this.dataset.cat)" style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+    <span style="display:flex;align-items:center;"><span style="display:inline-block;width:11px;height:11px;border-radius:4px;background:#f0abfc;margin-right:10px;"></span><span style="font-size:15px;color:#dbe3f0;">Outros+</span></span>
+    <span style="display:flex;align-items:center;gap:9px;"><b style="font-size:15px;color:#eaf0fa;">13%</b><span style="color:#5a6785;font-size:16px;">›</span></span></div></div></div></div>
 
   <div class="lbl">Top 3 gastos do mês</div>
-  <div style="margin-bottom:20px;font-size:13px;"><div style="display:flex;justify-content:space-between;padding:7px 0;"><span style="color:#aab6cc;">1. PIX Transf. Interna - Extrato Itaú</span><span style="font-weight:600;color:#eaf0fa;">R$ 4,4k</span></div><div style="display:flex;justify-content:space-between;padding:7px 0;"><span style="color:#aab6cc;">2. PIX Iara - Extrato Itaú</span><span style="font-weight:600;color:#eaf0fa;">R$ 3,5k</span></div><div style="display:flex;justify-content:space-between;padding:7px 0;"><span style="color:#aab6cc;">3. Aluguel</span><span style="font-weight:600;color:#eaf0fa;">R$ 3,0k</span></div></div>
+  <div style="margin-bottom:24px;"><div style="display:flex;justify-content:space-between;padding:9px 0;font-size:15px;"><span style="color:#aab6cc;">1. PIX Transf. Interna - Extrato Itaú</span><span style="font-weight:600;color:#eaf0fa;">R$ 4,4k</span></div><div style="display:flex;justify-content:space-between;padding:9px 0;font-size:15px;"><span style="color:#aab6cc;">2. PIX Iara - Extrato Itaú</span><span style="font-weight:600;color:#eaf0fa;">R$ 3,5k</span></div><div style="display:flex;justify-content:space-between;padding:9px 0;font-size:15px;"><span style="color:#aab6cc;">3. Aluguel</span><span style="font-weight:600;color:#eaf0fa;">R$ 3,0k</span></div></div>
 
-  <div style="display:flex;align-items:center;gap:11px;background:#facc1514;border:1px solid #facc1538;border-radius:12px;padding:13px 15px;">
-    <span style="width:9px;height:9px;border-radius:50%;background:#facc15;flex-shrink:0;box-shadow:0 0 8px #facc15;"></span>
-    <span style="font-size:12.5px;color:#cfe4f5;line-height:1.45;">Gastos passaram da renda esse mês. Revisem os maiores gastos.</span>
+  <div style="display:flex;align-items:center;gap:13px;background:#facc1514;border:1px solid #facc1538;border-radius:14px;padding:16px 18px;">
+    <span style="width:11px;height:11px;border-radius:50%;background:#facc15;flex-shrink:0;box-shadow:0 0 9px #facc15;"></span>
+    <span style="font-size:14.5px;color:#cfe4f5;line-height:1.45;">Gastos passaram da renda esse mês. Revisem os maiores gastos.</span>
   </div>
+</div>
+
+<!-- ===== SUBPAGINAS ===== -->
+<div id="invest" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Investimentos</div>
+    <div style="text-align:center;margin:8px 0 22px;">
+      <div style="font-size:13px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;">Total investido</div>
+      <div style="font-size:44px;font-weight:800;color:#eaf0fa;letter-spacing:-1.5px;margin-top:4px;">R$ 0</div>
+    </div>
+    <div style="background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);border-radius:16px;padding:18px;margin-bottom:22px;">
+      <div style="display:flex;justify-content:space-between;font-size:14px;color:#aab6cc;margin-bottom:10px;"><span>Meta do mês (10%)</span><span><b style="color:#38bdf8;">0%</b> de R$ 0</span></div>
+      <div style="height:12px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:0%;background:linear-gradient(90deg,#38bdf8,#22d3ee);border-radius:99px;"></div></div>
+    </div>
+    <div class="lbl">Histórico de aportes</div>
+    <div><div style="font-size:14px;color:#6b7a99;padding:14px 0;">nenhum aporte registrado ainda</div></div></div>
+<div id="contas" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Contas correntes</div><div style="text-align:center;margin:8px 0 20px;">
+      <div style="font-size:13px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;">Total nas contas</div>
+      <div style="font-size:40px;font-weight:800;color:#34d399;letter-spacing:-1px;margin-top:4px;">R$ 199</div>
+    </div><div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:18px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div><div style="font-size:17px;font-weight:600;color:#eaf0fa;">Conta Itaú Wes</div><div style="font-size:13px;color:#6b7a99;margin-top:3px;">Itaú · Wes</div></div>
+        <div style="text-align:right;"><div style="font-size:22px;font-weight:800;color:#34d399;">R$ 199</div><div style="font-size:12px;color:#34d399;">no azul</div></div>
+      </div>
+      <div style="font-size:13px;color:#8a97b3;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.05);">ult_ext: 2026-07-22</div>
+    </div></div>
+<div id="cartoes" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Cartões</div><div style="text-align:center;margin:8px 0 20px;">
+      <div style="font-size:13px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;">Total das faturas</div>
+      <div style="font-size:40px;font-weight:800;color:#eaf0fa;letter-spacing:-1px;margin-top:4px;">R$ 0</div>
+    </div><div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:18px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0;">
+        <div><div style="font-size:17px;font-weight:600;color:#eaf0fa;">Cartão Iara (dia 05)</div><div style="font-size:13px;color:#6b7a99;margin-top:3px;">vence dia 05 · Iara</div></div>
+        <div style="text-align:right;"><div style="font-size:22px;font-weight:800;color:#eaf0fa;">-</div><div style="font-size:12px;color:#6b7a99;">fatura</div></div>
+      </div>
+      
+    </div><div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:18px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0;">
+        <div><div style="font-size:17px;font-weight:600;color:#eaf0fa;">Cartão Iara (dia 20)</div><div style="font-size:13px;color:#6b7a99;margin-top:3px;">vence dia 20 · Iara</div></div>
+        <div style="text-align:right;"><div style="font-size:22px;font-weight:800;color:#eaf0fa;">-</div><div style="font-size:12px;color:#6b7a99;">fatura</div></div>
+      </div>
+      
+    </div><div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:18px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0;">
+        <div><div style="font-size:17px;font-weight:600;color:#eaf0fa;">Cartão Itaú 7046 - Wes</div><div style="font-size:13px;color:#6b7a99;margin-top:3px;">vence dia 17 · Wes</div></div>
+        <div style="text-align:right;"><div style="font-size:22px;font-weight:800;color:#eaf0fa;">-</div><div style="font-size:12px;color:#6b7a99;">fatura</div></div>
+      </div>
+      
+    </div><div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:18px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0;">
+        <div><div style="font-size:17px;font-weight:600;color:#eaf0fa;">Cartão XP - Wes</div><div style="font-size:13px;color:#6b7a99;margin-top:3px;">vence dia 05 · Wes</div></div>
+        <div style="text-align:right;"><div style="font-size:22px;font-weight:800;color:#eaf0fa;">-</div><div style="font-size:12px;color:#6b7a99;">fatura</div></div>
+      </div>
+      
+    </div></div>
+<div id="divida" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Dívida & quitação</div><div style="text-align:center;margin:8px 0 22px;">
+      <div style="font-size:13px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;">Dívida total</div>
+      <div style="font-size:44px;font-weight:800;color:#34d399;letter-spacing:-1.5px;margin-top:4px;">R$ 0</div>
+      <div style="font-size:13px;color:#6b7a99;margin-top:6px;">contas R$ 0 · faturas R$ 0</div>
+    </div>
+    <div class="lbl">Plano de quitação · do menor pro maior</div>
+    <div><div style="font-size:15px;color:#34d399;padding:20px 0;text-align:center;">Nada no vermelho. Parabéns! 🎉</div></div></div>
+<div id="categoria" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;" id="catTit">Categoria</div><div id="catBody"></div></div>
 
 </div>
-<div style="text-align:center;font-size:9.5px;color:#3a4560;margin-top:12px;letter-spacing:1.5px;">WI FINANCE · PAINEL DO CASAL</div>
-</div></body></html>
+<div style="text-align:center;font-size:11px;color:#3a4560;margin-top:16px;letter-spacing:2px;">WI FINANCE · PAINEL DO CASAL</div>
+</div>
+
+<script>
+var CATS = {"Mercado":[{"desc":"Mercado","val":558.88,"data":"2026-07-22"},{"desc":"Mercado","val":517.89,"data":"2026-07-13"},{"desc":"Mercado","val":127.66,"data":"2026-07-26"},{"desc":"Savegnago Supermercado","val":116.72,"data":"2026-07-04"},{"desc":"Supermercado","val":89.85,"data":"2026-07-03"},{"desc":"Sonda Supermercado","val":81.92,"data":"2026-07-09"},{"desc":"Mercado","val":74.57,"data":"2026-07-15"},{"desc":"Tenda Atacado","val":63.9,"data":"2026-07-14"},{"desc":"Sonda Supermercado","val":59.99,"data":"2026-07-14"},{"desc":"Mercado","val":49.85,"data":"2026-07-15"},{"desc":"Supermercado","val":49.73,"data":"2026-07-11"},{"desc":"Mercado","val":44.63,"data":"2026-07-13"},{"desc":"Carrefour","val":43.96,"data":"2026-07-13"},{"desc":"Covabra Supermercado","val":41,"data":"2026-07-21"},{"desc":"Marketplace - PIX Extrato Itaú","val":28.71,"data":"2026-07-21"},{"desc":"Sonda Supermercado","val":22.88,"data":"2026-07-12"},{"desc":"Sonda Supermercados","val":22.88,"data":"2026-07-12"},{"desc":"Tenda Atacado","val":21.08,"data":"2026-07-14"},{"desc":"Marketplace - PIX Extrato Itaú","val":19,"data":"2026-07-21"},{"desc":"Mercado","val":19,"data":"2026-07-12"},{"desc":"Supermercado","val":18.99,"data":"2026-07-20"},{"desc":"Sonda Supermercado","val":14.89,"data":"2026-07-21"},{"desc":"Sacolão Barbieri","val":12,"data":"2026-07-14"},{"desc":"Sonda Supermercado","val":7.99,"data":"2026-07-06"},{"desc":"Atacadão","val":6.99,"data":"2026-07-21"}],"Restaurante/Lanche":[{"desc":"COMER - Extrato Itaú","val":265.06,"data":"2026-07-03"},{"desc":"Restaurante","val":134.86,"data":"2026-07-07"},{"desc":"McDonald's","val":91.5,"data":"2026-07-11"},{"desc":"Harvey's - Extrato Itaú","val":78.87,"data":"2026-07-03"},{"desc":"Rest. Tomate Sabor","val":52,"data":"2026-07-14"},{"desc":"iFood - Extrato Itaú","val":49.9,"data":"2026-07-10"},{"desc":"McDonald's","val":49.8,"data":"2026-07-01"},{"desc":"Restaurante","val":40.63,"data":"2026-07-08"},{"desc":"Indaiatuba Rest. - Extrato Itaú","val":38,"data":"2026-07-11"},{"desc":"Restaurante Matuto","val":35,"data":"2026-07-26"},{"desc":"Oakberry - Extrato Itaú","val":32.99,"data":"2026-07-01"},{"desc":"Bacio di Latte","val":28.95,"data":"2026-07-14"},{"desc":"Rest. Tomate Sabor","val":28,"data":"2026-07-14"},{"desc":"Sorvete","val":26.9,"data":"2026-07-26"},{"desc":"Sorveteria","val":26.7,"data":"2026-07-17"},{"desc":"McDonald's","val":25.8,"data":"2026-07-14"},{"desc":"McDonald's","val":24.9,"data":"2026-07-10"},{"desc":"GE Salgados","val":23,"data":"2026-07-14"},{"desc":"Almoço","val":17.93,"data":"2026-07-21"},{"desc":"Axolo - Extrato Itaú","val":15.9,"data":"2026-07-15"},{"desc":"Restaurante","val":15,"data":"2026-07-16"},{"desc":"Kalim - Extrato Itaú","val":12.99,"data":"2026-07-03"},{"desc":"Cerveja","val":10,"data":"2026-07-12"},{"desc":"Restaurante","val":8,"data":"2026-07-04"}],"Outros":[{"desc":"PIX Transf. Interna - Extrato Itaú","val":4440,"data":"2026-07-15"},{"desc":"PIX Iara - Extrato Itaú","val":3500,"data":"2026-07-16"},{"desc":"PIX Transf. Interna - Extrato Itaú","val":2200,"data":"2026-07-15"},{"desc":"PIX Transf. Interna - Extrato Itaú","val":1800,"data":"2026-07-16"},{"desc":"PIX Wanderley (dívida) - Extrato Itaú","val":1500,"data":"2026-07-16"},{"desc":"Pix Empréstimo (4/10)","val":1267.63,"data":"2026-07-14"},{"desc":"PIX Guilherme (dívida) - Extrato Itaú","val":1000,"data":"2026-07-16"},{"desc":"Pai empréstimo","val":1000,"data":"2026-07-01"},{"desc":"PIX Guilherme (dívida) - Extrato Itaú","val":200,"data":"2026-07-16"},{"desc":"Unhas","val":200,"data":"2026-07-01"},{"desc":"Banho João","val":170,"data":"2026-07-01"},{"desc":"Presente vó","val":120.49,"data":"2026-07-13"},{"desc":"Vitor - Extrato Itaú","val":117,"data":"2026-07-10"},{"desc":"Unha","val":100,"data":"2026-07-13"},{"desc":"MP L - Extrato Itaú","val":59,"data":"2026-07-22"},{"desc":"MP L - Extrato Itaú","val":54.5,"data":"2026-07-17"},{"desc":"Sobrancelha","val":50,"data":"2026-07-01"},{"desc":"F A - Extrato Itaú","val":41.3,"data":"2026-07-08"},{"desc":"Havan (2/3)","val":38.97,"data":"2026-07-14"},{"desc":"RECRE - Extrato Itaú","val":38.96,"data":"2026-07-05"},{"desc":"MP L - Extrato Itaú","val":38,"data":"2026-07-10"},{"desc":"Kalunga","val":30.2,"data":"2026-07-23"},{"desc":"CLM P - Extrato Itaú","val":30,"data":"2026-07-02"},{"desc":"RECRE - Extrato Itaú","val":29.98,"data":"2026-07-20"},{"desc":"Anuidade Cartão","val":25,"data":"2026-07-14"},{"desc":"Petz Indaiatuba","val":22.5,"data":"2026-07-14"},{"desc":"F A - Extrato Itaú","val":21,"data":"2026-07-20"},{"desc":"ORA P - Extrato Itaú","val":19.99,"data":"2026-07-22"},{"desc":"ORA P - Extrato Itaú","val":19.99,"data":"2026-07-16"},{"desc":"ORA P - Extrato Itaú","val":19.99,"data":"2026-07-14"},{"desc":"F A - Extrato Itaú","val":18.5,"data":"2026-07-22"},{"desc":"F A - Extrato Itaú","val":18.5,"data":"2026-07-17"},{"desc":"RECRE - Extrato Itaú","val":17.99,"data":"2026-07-18"},{"desc":"RECRE - Extrato Itaú","val":17.99,"data":"2026-07-15"},{"desc":"RECRE - Extrato Itaú","val":17.99,"data":"2026-07-13"},{"desc":"RECRE - Extrato Itaú","val":17.99,"data":"2026-07-13"},{"desc":"RECRE - Extrato Itaú","val":17.99,"data":"2026-07-12"},{"desc":"RECRE - Extrato Itaú","val":17.99,"data":"2026-07-11"},{"desc":"RECRE - Extrato Itaú","val":17.99,"data":"2026-07-09"},{"desc":"RECRE - Extrato Itaú","val":17.99,"data":"2026-07-08"},{"desc":"RECRE - Extrato Itaú","val":17.99,"data":"2026-07-04"},{"desc":"RECRE - Extrato Itaú","val":17.99,"data":"2026-07-01"},{"desc":"F A - Extrato Itaú","val":16.5,"data":"2026-07-03"},{"desc":"RECRE - Extrato Itaú","val":13.99,"data":"2026-07-21"},{"desc":"RECRE - Extrato Itaú","val":10.99,"data":"2026-07-04"},{"desc":"Juros Limite Conta - Itaú","val":8.63,"data":"2026-07-01"},{"desc":"Seguro Cartão - Itaú","val":8.2,"data":"2026-07-20"},{"desc":"Seguro cartão","val":8.2,"data":"2026-07-01"},{"desc":"ORA P - Extrato Itaú","val":4.9,"data":"2026-07-06"},{"desc":"IOF - Itaú","val":3.71,"data":"2026-07-02"}],"Conveniência":[{"desc":"CENTE Posto Conveniência - Extrato Itaú","val":20,"data":"2026-07-17"},{"desc":"Ceará Conveniência - Extrato Itaú","val":5,"data":"2026-07-13"}],"Lazer":[{"desc":"Clube","val":695,"data":"2026-07-01"},{"desc":"PIX Jorge - Aula Tênis - Extrato Itaú","val":550,"data":"2026-07-16"},{"desc":"DL H Viagem Seattle (2/8)","val":126.99,"data":"2026-07-14"},{"desc":"Passeio fim de semana","val":126.7,"data":"2026-07-15"},{"desc":"Tênis Clube","val":39,"data":"2026-07-21"},{"desc":"Adega - Extrato Itaú","val":7,"data":"2026-07-11"}],"Casa/Moradia":[{"desc":"Aluguel","val":3000,"data":"2026-07-01"},{"desc":"Condomínio","val":500,"data":"2026-07-01"},{"desc":"Luz","val":350,"data":"2026-07-01"},{"desc":"Lavagem sofá","val":300,"data":"2026-07-13"},{"desc":"Manutenção ar condicionado","val":250,"data":"2026-07-13"},{"desc":"Celulares (plano)","val":140,"data":"2026-07-01"},{"desc":"AliExpress - Itens Banheiro","val":126.24,"data":"2026-07-22"},{"desc":"Internet de casa (Arganet)","val":122.58,"data":"2026-07-01"},{"desc":"Produtos de Limpeza (2/2)","val":94.68,"data":"2026-07-22"},{"desc":"Produtos de Limpeza (1/2)","val":94.68,"data":"2026-07-22"},{"desc":"CasaD - Extrato Itaú","val":76.9,"data":"2026-07-02"}],"Padaria":[{"desc":"PAO E - Extrato Itaú","val":47.3,"data":"2026-07-22"},{"desc":"Padaria","val":38.5,"data":"2026-07-21"},{"desc":"Gianini Padaria","val":28.4,"data":"2026-07-14"},{"desc":"Padaria","val":25,"data":"2026-07-12"},{"desc":"Panificadora","val":23.72,"data":"2026-07-11"},{"desc":"Panificadora","val":17.02,"data":"2026-07-08"},{"desc":"Panificadora","val":13.29,"data":"2026-07-03"},{"desc":"Pão Doce - Padaria","val":7.99,"data":"2026-07-03"},{"desc":"Panificadora","val":3.68,"data":"2026-07-10"}],"Transporte/Pedágio":[{"desc":"Sem Parar - Pedágio/Estacionamento","val":320.43,"data":"2026-07-10"},{"desc":"ViaMobilidade - Transporte","val":16.5,"data":"2026-07-19"},{"desc":"VMT Transporte","val":12.9,"data":"2026-07-07"},{"desc":"VMT Transporte","val":12.9,"data":"2026-07-15"},{"desc":"VMT Transporte","val":12.9,"data":"2026-07-15"},{"desc":"VMT Transporte","val":12.9,"data":"2026-07-20"}],"Saúde/Farmácia":[{"desc":"Personal Wes (1/12)","val":368.37,"data":"2026-07-14"},{"desc":"Farmácia (remédio contínuo)","val":195.61,"data":"2026-07-01"},{"desc":"PG Genera Gen (1/6)","val":54.45,"data":"2026-07-14"},{"desc":"MetLife odonto","val":46.9,"data":"2026-07-01"},{"desc":"Farmácia","val":41,"data":"2026-07-12"},{"desc":"Droga Raia - Farmácia","val":22.83,"data":"2026-07-14"}],"Assinaturas":[{"desc":"Claude Max","val":689,"data":"2026-07-01"},{"desc":"Arganet Internet - Boleto","val":122.5,"data":"2026-07-15"},{"desc":"Disney+","val":66.9,"data":"2026-07-01"},{"desc":"Apple apps/iCloud","val":60,"data":"2026-07-01"},{"desc":"Apple.com","val":59.9,"data":"2026-07-14"},{"desc":"Amazon Prime (canais)","val":44.9,"data":"2026-07-01"},{"desc":"Netflix","val":44.9,"data":"2026-07-01"},{"desc":"Spotify","val":31.9,"data":"2026-07-01"},{"desc":"Amazon Prime (aluguel)","val":29.9,"data":"2026-07-01"},{"desc":"Amazon Prime","val":19.9,"data":"2026-07-01"},{"desc":"Clube iFood","val":7.95,"data":"2026-07-14"}],"Combustível":[{"desc":"Posto de Combustível","val":50,"data":"2026-07-15"}],"Carro":[{"desc":"Parcela do carro (Embracon)","val":2192.36,"data":"2026-07-01"},{"desc":"IPVA (diluído)","val":441.67,"data":"2026-07-01"},{"desc":"Pneu do Carro (1/10)","val":251.07,"data":"2026-07-14"}],"Educação":[{"desc":"Aula de tênis","val":550,"data":"2026-07-01"}],"Combustivel":[{"desc":"Posto","val":45,"data":"2026-07-12"}]};
+var pags = ["home","invest","contas","cartoes","divida","categoria"];
+function show(id){ pags.forEach(function(p){ document.getElementById(p).classList.add("hidden"); }); var e=document.getElementById(id); e.classList.remove("hidden"); e.style.animation="none"; e.offsetHeight; e.style.animation=""; window.scrollTo(0,0); }
+function abre(id){ show(id); }
+function volta(){ show("home"); }
+function fnum(v){ var s=v<0?"-":""; v=Math.abs(v); return v>=1000?(s+"R$ "+(v/1000).toFixed(v>=10000?0:1).replace(".",",")+"k"):(s+"R$ "+Math.round(v)); }
+function abreCat(nome){
+  var l = CATS[nome]||[];
+  var total = l.reduce(function(s,x){return s+x.val;},0);
+  document.getElementById("catTit").textContent = nome;
+  var head = '<div style="text-align:center;margin:8px 0 20px;"><div style="font-size:13px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;">Total em '+nome+'</div><div style="font-size:40px;font-weight:800;color:#eaf0fa;letter-spacing:-1px;margin-top:4px;">'+fnum(total)+'</div><div style="font-size:13px;color:#6b7a99;margin-top:4px;">'+l.length+' lançamento'+(l.length!=1?'s':'')+' no mês</div></div>';
+  var body = l.length? l.map(function(x){ return '<div style="display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:15px;color:#dbe3f0;">'+x.desc+(x.data?' <span style=\'color:#5a6785;font-size:13px;\'>'+(x.data?x.data.slice(8,10)+"/"+x.data.slice(5,7):"")+'</span>':'')+'</span><span style="font-size:15px;font-weight:700;color:#eaf0fa;">'+fnum(x.val)+'</span></div>'; }).join("") : '<div style="font-size:14px;color:#6b7a99;padding:14px 0;">sem lançamentos</div>';
+  document.getElementById("catBody").innerHTML = head + body;
+  show("categoria");
+}
+</script>
+</body></html>
