@@ -141,13 +141,13 @@ function roscaGrande(cats, total) {
     const s = `<circle cx="21" cy="21" r="15.9" fill="none" stroke="${CORES[i%CORES.length]}" stroke-width="6.5" stroke-dasharray="${pct.toFixed(1)} 100" stroke-dashoffset="${(-off).toFixed(1)}" transform="rotate(-90 21 21)"/>`;
     off += pct; return s;
   }).join("");
-  const leg = cats.map((c,i)=>`<div data-cat="${esc(c.nome)}" onclick="abreCat(this.dataset.cat)" style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
-    <span style="display:flex;align-items:center;"><span style="display:inline-block;width:11px;height:11px;border-radius:4px;background:${CORES[i%CORES.length]};margin-right:10px;"></span><span style="font-size:15px;color:#dbe3f0;">${esc(c.nome)}</span></span>
-    <span style="display:flex;align-items:center;gap:9px;"><b style="font-size:15px;color:#eaf0fa;">${Math.round(c.val/total*100)}%</b><span style="color:#5a6785;font-size:16px;">›</span></span></div>`).join("");
-  return `<div style="display:flex;flex-direction:column;align-items:center;gap:22px;">
-    <div style="position:relative;width:200px;height:200px;">
+  const leg = cats.map((c,i)=>`<div data-cat="${esc(c.nome)}" onclick="abreCat(this.dataset.cat)" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+    <span style="display:flex;align-items:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${CORES[i%CORES.length]};margin-right:9px;"></span><span style="font-size:13.5px;color:#dbe3f0;">${esc(c.nome)}</span></span>
+    <span style="display:flex;align-items:center;gap:8px;"><b style="font-size:13.5px;color:#eaf0fa;">${Math.round(c.val/total*100)}%</b><span style="color:#5a6785;font-size:15px;">›</span></span></div>`).join("");
+  return `<div style="display:flex;flex-direction:column;align-items:center;gap:18px;">
+    <div style="position:relative;width:158px;height:158px;">
       <svg viewBox="0 0 42 42" style="width:100%;height:100%;"><circle cx="21" cy="21" r="15.9" fill="none" stroke="#141d33" stroke-width="6.5"/>${segs}</svg>
-      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:30px;font-weight:800;color:#eaf0fa;">${fmt(total)}</div><div style="font-size:12px;color:#6b7a99;letter-spacing:.5px;">total no mês</div></div>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:24px;font-weight:800;color:#eaf0fa;">${fmt(total)}</div><div style="font-size:10px;color:#6b7a99;letter-spacing:.5px;">total no mês</div></div>
     </div>
     <div style="width:100%;">${leg}</div></div>`;
 }
@@ -235,14 +235,14 @@ function html(d) {
   const contasHTML = d.contasCC.length ? d.contasCC.map((c,i)=>{
     const neg=(c.saldo||0)<0, cor=neg?"#f87171":"#34d399", badge=neg?"vermelho":"azul";
     const bg=neg?"rgba(248,113,113,.14)":"rgba(52,211,153,.13)";
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;${i<d.contasCC.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}">
-      <span style="font-size:16px;color:#dbe3f0;">${esc(c.nome)}${c.banco?` · ${esc(c.banco)}`:""}</span>
-      <span style="display:flex;align-items:center;gap:9px;"><span style="font-size:16px;font-weight:700;color:${cor};">${fmt(c.saldo)}</span><span style="font-size:11px;background:${bg};color:${cor};padding:3px 10px;border-radius:99px;">${badge}</span></span></div>`;
-  }).join("") : `<div style="font-size:14px;color:#6b7a99;padding:10px 0;">nenhuma conta cadastrada ainda</div>`;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;${i<d.contasCC.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}">
+      <span style="font-size:14px;color:#dbe3f0;">${esc(c.nome)}${c.banco?` · ${esc(c.banco)}`:""}</span>
+      <span style="display:flex;align-items:center;gap:8px;"><span style="font-size:14px;font-weight:700;color:${cor};">${fmt(c.saldo)}</span><span style="font-size:10px;background:${bg};color:${cor};padding:2px 9px;border-radius:99px;">${badge}</span></span></div>`;
+  }).join("") : `<div style="font-size:13px;color:#6b7a99;padding:10px 0;">nenhuma conta cadastrada ainda</div>`;
 
-  const cartoesHTML = d.cartoes.length ? d.cartoes.map((c,i)=>`<div style="display:flex;justify-content:space-between;padding:13px 0;${i<d.cartoes.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:15px;color:#aab6cc;">${esc(c.nome)}${c.venc?` · ${esc(c.venc)}`:""}</span><span style="font-size:15px;font-weight:600;color:#eaf0fa;">${c.fatura!=null?fmt(c.fatura):"-"}</span></div>`).join("") : `<div style="font-size:14px;color:#6b7a99;padding:10px 0;">nenhum cartão com fatura ainda</div>`;
+  const cartoesHTML = d.cartoes.length ? d.cartoes.map((c,i)=>`<div style="display:flex;justify-content:space-between;padding:11px 0;${i<d.cartoes.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#aab6cc;">${esc(c.nome)}${c.venc?` · ${esc(c.venc)}`:""}</span><span style="font-size:13.5px;font-weight:600;color:#eaf0fa;">${c.fatura!=null?fmt(c.fatura):"-"}</span></div>`).join("") : `<div style="font-size:13px;color:#6b7a99;padding:10px 0;">nenhum cartão com fatura ainda</div>`;
 
-  const top3HTML = d.top3.length ? d.top3.map((g,i)=>`<div style="display:flex;justify-content:space-between;padding:9px 0;font-size:15px;"><span style="color:#aab6cc;">${i+1}. ${esc(g.desc)}</span><span style="font-weight:600;color:#eaf0fa;">${fmt(g.val)}</span></div>`).join("") : `<div style="font-size:14px;color:#6b7a99;padding:10px 0;">sem gastos no mês</div>`;
+  const top3HTML = d.top3.length ? d.top3.map((g,i)=>`<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13.5px;"><span style="color:#aab6cc;">${i+1}. ${esc(g.desc)}</span><span style="font-weight:600;color:#eaf0fa;">${fmt(g.val)}</span></div>`).join("") : `<div style="font-size:13px;color:#6b7a99;padding:10px 0;">sem gastos no mês</div>`;
 
   // dados de categoria pro JS (pagina interna)
   const catJSON = JSON.stringify(Object.fromEntries(Object.entries(d.lancPorCat).map(([k,v])=>[k,v])));
@@ -262,8 +262,8 @@ function html(d) {
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100vh;padding:16px}
 .wrap{max-width:460px;margin:0 auto}
-.card{background:radial-gradient(120% 80% at 50% 0%,#141d33,#0a0e1a 62%);border-radius:26px;padding:24px;border:1px solid rgba(56,189,248,.2);box-shadow:0 24px 70px rgba(0,0,0,.55)}
-.lbl{font-size:12px;color:#7d8aa5;letter-spacing:1.4px;text-transform:uppercase;margin-bottom:12px;font-weight:600}
+.card{background:radial-gradient(120% 80% at 50% 0%,#141d33,#0a0e1a 62%);border-radius:22px;padding:18px;border:1px solid rgba(56,189,248,.2);box-shadow:0 24px 70px rgba(0,0,0,.55)}
+.lbl{font-size:11px;color:#7d8aa5;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px;font-weight:600}
 .click{cursor:pointer;transition:transform .12s,border-color .12s}
 .click:active{transform:scale(.985)}
 .chev{color:#5a6785;font-size:19px;font-weight:400}
@@ -277,56 +277,56 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
 
 <!-- ===== HOME ===== -->
 <div id="home" class="pg">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:26px;">
-    <div style="display:flex;align-items:center;gap:14px;">
-      <div class="logo">WI</div>
-      <div><div style="font-size:22px;font-weight:800;color:#eaf0fa;letter-spacing:-.3px;">WI Finance</div><div style="font-size:12px;color:#6b7a99;margin-top:2px;text-transform:capitalize;">${diaSem}, ${dataLonga} · ${hora}</div></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <img src="logo.png?v=${Date.now()}" alt="WI" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(56,189,248,.4);box-shadow:0 0 14px rgba(56,189,248,.25);">
+      <div><div style="font-size:18px;font-weight:800;color:#eaf0fa;letter-spacing:-.2px;">WI Finance</div><div style="font-size:11px;color:#6b7a99;margin-top:1px;text-transform:capitalize;">${diaSem}, ${dataLonga} · ${hora}</div></div>
     </div>
-    <span style="width:9px;height:9px;border-radius:50%;background:#38bdf8;box-shadow:0 0 12px #38bdf8;"></span>
+    <span style="width:8px;height:8px;border-radius:50%;background:#38bdf8;box-shadow:0 0 10px #38bdf8;"></span>
   </div>
 
-  <div class="click" onclick="abre('divida')" style="background:linear-gradient(150deg,rgba(56,189,248,.14),rgba(34,211,238,.03));border:1px solid rgba(56,189,248,.24);border-radius:20px;padding:26px;margin-bottom:16px;display:flex;align-items:center;gap:22px;">
-    <div style="position:relative;width:104px;height:104px;flex-shrink:0;">
+  <div class="click" onclick="abre('divida')" style="background:linear-gradient(150deg,rgba(56,189,248,.14),rgba(34,211,238,.03));border:1px solid rgba(56,189,248,.24);border-radius:18px;padding:18px;margin-bottom:12px;display:flex;align-items:center;gap:16px;">
+    <div style="position:relative;width:78px;height:78px;flex-shrink:0;">
       <svg viewBox="0 0 100 100" style="width:100%;height:100%;transform:rotate(-90deg);"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(56,189,248,.1)" stroke-width="9"/><circle cx="50" cy="50" r="42" fill="none" stroke="#38bdf8" stroke-width="9" stroke-linecap="round" stroke-dasharray="${dash}" stroke-dashoffset="${offset}" style="filter:drop-shadow(0 0 5px rgba(56,189,248,.6));"/></svg>
-      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:26px;font-weight:800;color:#38bdf8;">${pctMeta}%</div><div style="font-size:10px;color:#6b7a99;">meta invest.</div></div>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:19px;font-weight:800;color:#38bdf8;">${pctMeta}%</div><div style="font-size:8px;color:#6b7a99;">meta</div></div>
     </div>
-    <div><div style="font-size:12.5px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;">Sobra do mês</div>
-      <div style="font-size:40px;font-weight:900;letter-spacing:-1.5px;line-height:1;color:#eaf0fa;">${fmtFull(d.sobra)}</div>
-      <div style="font-size:12.5px;color:#6b7a99;margin-top:8px;">investido ${fmtFull(d.investido)} de ${fmtFull(d.meta)}</div></div>
+    <div style="min-width:0;flex:1;"><div style="font-size:11px;color:#7d8aa5;letter-spacing:.8px;text-transform:uppercase;margin-bottom:3px;">Sobra do mês</div>
+      <div style="font-size:clamp(22px,7vw,30px);font-weight:800;letter-spacing:-1px;line-height:1.05;color:#eaf0fa;white-space:nowrap;">${fmtFull(d.sobra)}</div>
+      <div style="font-size:11px;color:#6b7a99;margin-top:5px;">investido ${fmtFull(d.investido)} de ${fmtFull(d.meta)}</div></div>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
-    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:18px;"><div style="font-size:11.5px;color:#6b7a99;text-transform:uppercase;letter-spacing:.8px;">Entrou no mês</div><div style="font-size:26px;font-weight:800;margin-top:6px;color:#eaf0fa;">${fmt(d.renda)}</div></div>
-    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:18px;"><div style="font-size:11.5px;color:#6b7a99;text-transform:uppercase;letter-spacing:.8px;">Saiu no mês</div><div style="font-size:26px;font-weight:800;margin-top:6px;color:#eaf0fa;">${fmt(d.saidas)}</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px;"><div style="font-size:10.5px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Entrou no mês</div><div style="font-size:21px;font-weight:800;margin-top:4px;color:#eaf0fa;">${fmt(d.renda)}</div></div>
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px;"><div style="font-size:10.5px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Saiu no mês</div><div style="font-size:21px;font-weight:800;margin-top:4px;color:#eaf0fa;">${fmt(d.saidas)}</div></div>
   </div>
 
-  <div class="click" onclick="abre('invest')" style="background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.15);border-radius:14px;padding:16px 18px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
-    <span style="font-size:13px;color:#7d8aa5;text-transform:uppercase;letter-spacing:.8px;">Investimentos</span>
-    <span style="display:flex;align-items:center;gap:10px;"><span style="font-size:19px;font-weight:800;color:#38bdf8;">${fmtFull(d.contaInvest?d.contaInvest.saldo:d.investido)}</span><span class="chev">›</span></span>
+  <div class="click" onclick="abre('invest')" style="background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.15);border-radius:12px;padding:13px 16px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:12px;color:#7d8aa5;text-transform:uppercase;letter-spacing:.6px;">Investimentos</span>
+    <span style="display:flex;align-items:center;gap:8px;"><span style="font-size:16px;font-weight:800;color:#38bdf8;">${fmtFull(d.contaInvest?d.contaInvest.saldo:d.investido)}</span><span class="chev">›</span></span>
   </div>
 
-  <div class="click" onclick="abre('divida')" style="background:rgba(255,255,255,.02);border-radius:14px;padding:16px 18px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;">
-    <span style="font-size:13px;color:#7d8aa5;text-transform:uppercase;letter-spacing:.8px;">Posição geral hoje</span>
-    <span style="display:flex;align-items:center;gap:10px;"><span style="font-size:20px;font-weight:800;color:${posGeral>=0?'#34d399':'#f87171'};">${fmtFull(posGeral)}</span><span class="chev">›</span></span>
+  <div class="click" onclick="abre('divida')" style="background:rgba(255,255,255,.02);border-radius:12px;padding:13px 16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:12px;color:#7d8aa5;text-transform:uppercase;letter-spacing:.6px;">Posição geral hoje</span>
+    <span style="display:flex;align-items:center;gap:8px;"><span style="font-size:17px;font-weight:800;color:${posGeral>=0?'#34d399':'#f87171'};">${fmtFull(posGeral)}</span><span class="chev">›</span></span>
   </div>
 
   <div class="lbl">Contas correntes</div>
-  <div class="click" onclick="abre('contas')" style="margin-bottom:24px;">${contasHTML}
-    <div style="display:flex;justify-content:flex-end;align-items:center;gap:6px;color:#5a6785;font-size:13px;margin-top:10px;">ver detalhes <span class="chev">›</span></div></div>
+  <div class="click" onclick="abre('contas')" style="margin-bottom:18px;">${contasHTML}
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:5px;color:#5a6785;font-size:12px;margin-top:8px;">ver detalhes <span class="chev">›</span></div></div>
 
   <div class="lbl">Cartões · faturas</div>
-  <div class="click" onclick="abre('cartoes')" style="margin-bottom:24px;">${cartoesHTML}
-    <div style="display:flex;justify-content:flex-end;align-items:center;gap:6px;color:#5a6785;font-size:13px;margin-top:10px;">ver detalhes <span class="chev">›</span></div></div>
+  <div class="click" onclick="abre('cartoes')" style="margin-bottom:18px;">${cartoesHTML}
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:5px;color:#5a6785;font-size:12px;margin-top:8px;">ver detalhes <span class="chev">›</span></div></div>
 
   <div class="lbl">Gastos do mês por categoria</div>
-  <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:20px;padding:24px 20px;margin-bottom:24px;">${roscaGrande(d.top5, d.totalGasto)}</div>
+  <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:18px;padding:18px 16px;margin-bottom:18px;">${roscaGrande(d.top5, d.totalGasto)}</div>
 
   <div class="lbl">Top 3 gastos do mês</div>
-  <div style="margin-bottom:24px;">${top3HTML}</div>
+  <div style="margin-bottom:18px;">${top3HTML}</div>
 
-  <div style="display:flex;align-items:center;gap:13px;background:${f.cor}14;border:1px solid ${f.cor}38;border-radius:14px;padding:16px 18px;">
-    <span style="width:11px;height:11px;border-radius:50%;background:${f.cor};flex-shrink:0;box-shadow:0 0 9px ${f.cor};"></span>
-    <span style="font-size:14.5px;color:#cfe4f5;line-height:1.45;">${f.txt}</span>
+  <div style="display:flex;align-items:center;gap:11px;background:${f.cor}14;border:1px solid ${f.cor}38;border-radius:12px;padding:13px 15px;">
+    <span style="width:10px;height:10px;border-radius:50%;background:${f.cor};flex-shrink:0;box-shadow:0 0 8px ${f.cor};"></span>
+    <span style="font-size:13px;color:#cfe4f5;line-height:1.45;">${f.txt}</span>
   </div>
 </div>
 
