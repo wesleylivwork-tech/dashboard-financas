@@ -1,1 +1,77 @@
-<h1>Painel em construcao</h1>
+<!DOCTYPE html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Finanças">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSIjMGYyMjQ2Ii8+PHRleHQgeD0iOTAiIHk9IjExNSIgZm9udC1zaXplPSI3MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iIzM4YmRmOCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+V0k8L3RleHQ+PC9zdmc+">
+<title>Finanças do casal</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100vh;padding:14px}
+.wrap{max-width:440px;margin:0 auto}
+.card{background:radial-gradient(120% 80% at 50% 0%,#141d33,#0a0e1a 60%);border-radius:22px;padding:20px;border:1px solid rgba(56,189,248,.18);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.lbl{font-size:10.5px;color:#6b7a99;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:9px}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.card>*{animation:rise .5s ease both}
+</style></head>
+<body><div class="wrap"><div class="card">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:11px;">
+      <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(145deg,#1b3a6b,#0f2246);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#38bdf8;box-shadow:0 0 16px rgba(56,189,248,.25);">WI</div>
+      <div><div style="font-size:14.5px;font-weight:600;color:#eaf0fa;">Finanças do casal</div><div style="font-size:10.5px;color:#6b7a99;">atualizado 26 de julho</div></div>
+    </div>
+    <span style="width:7px;height:7px;border-radius:50%;background:#38bdf8;box-shadow:0 0 10px #38bdf8;"></span>
+  </div>
+
+  <div style="background:linear-gradient(150deg,rgba(56,189,248,.12),rgba(34,211,238,.03));border:1px solid rgba(56,189,248,.22);border-radius:18px;padding:22px;margin-bottom:14px;display:flex;align-items:center;gap:20px;">
+    <div style="position:relative;width:92px;height:92px;flex-shrink:0;">
+      <svg viewBox="0 0 100 100" style="width:100%;height:100%;transform:rotate(-90deg);"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(56,189,248,.1)" stroke-width="8"/><circle cx="50" cy="50" r="42" fill="none" stroke="#38bdf8" stroke-width="8" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264" style="filter:drop-shadow(0 0 4px rgba(56,189,248,.6));"/></svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:20px;font-weight:800;color:#38bdf8;">0%</div><div style="font-size:9px;color:#6b7a99;">meta invest.</div></div>
+    </div>
+    <div><div style="font-size:11px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Sobra do mês</div>
+      <div style="font-size:31px;font-weight:800;letter-spacing:-1px;line-height:1;color:#eaf0fa;">-R$ 42.456</div>
+      <div style="font-size:11px;color:#6b7a99;margin-top:6px;">investido R$ 0 de R$ 0</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;">
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:14px;padding:14px;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.8px;">Entrou no mês</div><div style="font-size:19px;font-weight:700;margin-top:4px;color:#eaf0fa;">R$ 0</div></div>
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:14px;padding:14px;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.8px;">Saiu no mês</div><div style="font-size:19px;font-weight:700;margin-top:4px;color:#eaf0fa;">R$ 42k</div></div>
+  </div>
+
+  <div style="background:rgba(255,255,255,.02);border-radius:12px;padding:11px 14px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:11.5px;color:#7d8aa5;text-transform:uppercase;letter-spacing:.8px;">Posição geral hoje</span>
+    <span style="font-size:16px;font-weight:800;color:#34d399;">R$ 199</span>
+  </div>
+
+  <div class="lbl">Contas correntes</div>
+  <div style="margin-bottom:20px;"><div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;">
+      <span style="font-size:13.5px;color:#dbe3f0;">Conta Itaú Wes · Itaú</span>
+      <span style="display:flex;align-items:center;gap:8px;"><span style="font-size:13.5px;font-weight:700;color:#34d399;">R$ 199</span><span style="font-size:9px;background:rgba(52,211,153,.13);color:#34d399;padding:2px 8px;border-radius:99px;">azul</span></span></div></div>
+
+  <div class="lbl">Cartões · faturas</div>
+  <div style="margin-bottom:20px;"><div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:13px;color:#aab6cc;">Cartão Iara (dia 05) · dia 05</span><span style="font-size:13px;font-weight:600;color:#eaf0fa;">-</span></div><div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:13px;color:#aab6cc;">Cartão Iara (dia 20) · dia 20</span><span style="font-size:13px;font-weight:600;color:#eaf0fa;">-</span></div><div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:13px;color:#aab6cc;">Cartão Itaú 7046 - Wes · dia 17</span><span style="font-size:13px;font-weight:600;color:#eaf0fa;">-</span></div><div style="display:flex;justify-content:space-between;padding:10px 0;"><span style="font-size:13px;color:#aab6cc;">Cartão XP - Wes · dia 05</span><span style="font-size:13px;font-weight:600;color:#eaf0fa;">-</span></div></div>
+
+  <div class="lbl">Gastos do mês por categoria</div>
+  <div style="margin-bottom:20px;"><div style="display:flex;align-items:center;gap:16px;">
+    <div style="position:relative;width:120px;height:120px;flex-shrink:0;">
+      <svg viewBox="0 0 42 42" style="width:100%;height:100%;"><circle cx="21" cy="21" r="15.9" fill="none" stroke="#1a2540" stroke-width="5.5"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#38bdf8" stroke-width="5.5" stroke-dasharray="54.0 100" stroke-dashoffset="0.0" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#22d3ee" stroke-width="5.5" stroke-dasharray="17.1 100" stroke-dashoffset="-54.0" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#818cf8" stroke-width="5.5" stroke-dasharray="6.8 100" stroke-dashoffset="-71.1" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#c084fc" stroke-width="5.5" stroke-dasharray="6.6 100" stroke-dashoffset="-77.9" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#5eead4" stroke-width="5.5" stroke-dasharray="4.8 100" stroke-dashoffset="-84.5" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#556085" stroke-width="5.5" stroke-dasharray="10.8 100" stroke-dashoffset="-89.2" transform="rotate(-90 21 21)"/></svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:15px;font-weight:800;color:#eaf0fa;">R$ 42k</div><div style="font-size:8px;color:#6b7a99;">total</div></div>
+    </div>
+    <div style="flex:1;font-size:11.5px;color:#aab6cc;"><span style="display:block;margin-bottom:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#38bdf8;margin-right:7px;"></span>Outros <b style="color:#eaf0fa;">54%</b></span><span style="display:block;margin-bottom:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#22d3ee;margin-right:7px;"></span>Casa/Moradia <b style="color:#eaf0fa;">17%</b></span><span style="display:block;margin-bottom:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#818cf8;margin-right:7px;"></span>Carro <b style="color:#eaf0fa;">7%</b></span><span style="display:block;margin-bottom:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#c084fc;margin-right:7px;"></span>Lazer <b style="color:#eaf0fa;">7%</b></span><span style="display:block;margin-bottom:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#5eead4;margin-right:7px;"></span>Mercado <b style="color:#eaf0fa;">5%</b></span><span style="display:block;margin-bottom:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:#556085;margin-right:7px;"></span>Outros <b style="color:#eaf0fa;">11%</b></span></div></div></div>
+
+  <div class="lbl">Top 3 gastos do mês</div>
+  <div style="margin-bottom:20px;font-size:13px;"><div style="display:flex;justify-content:space-between;padding:7px 0;"><span style="color:#aab6cc;">1. PIX Transf. Interna - Extrato Itaú</span><span style="font-weight:600;color:#eaf0fa;">R$ 4,4k</span></div><div style="display:flex;justify-content:space-between;padding:7px 0;"><span style="color:#aab6cc;">2. PIX Iara - Extrato Itaú</span><span style="font-weight:600;color:#eaf0fa;">R$ 3,5k</span></div><div style="display:flex;justify-content:space-between;padding:7px 0;"><span style="color:#aab6cc;">3. Aluguel</span><span style="font-weight:600;color:#eaf0fa;">R$ 3,0k</span></div></div>
+
+  <div style="display:flex;align-items:center;gap:11px;background:#facc1514;border:1px solid #facc1538;border-radius:12px;padding:13px 15px;">
+    <span style="width:9px;height:9px;border-radius:50%;background:#facc15;flex-shrink:0;box-shadow:0 0 8px #facc15;"></span>
+    <span style="font-size:12.5px;color:#cfe4f5;line-height:1.45;">Gastos passaram da renda esse mês. Revisem os maiores gastos.</span>
+  </div>
+
+</div>
+<div style="text-align:center;font-size:9.5px;color:#3a4560;margin-top:12px;letter-spacing:1.5px;">WI FINANCE · PAINEL DO CASAL</div>
+</div></body></html>
