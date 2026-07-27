@@ -314,12 +314,12 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
 
   <div class="click" onclick="abre('invest')" style="background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.15);border-radius:12px;padding:13px 16px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;">
     <span style="font-size:12px;color:#7d8aa5;text-transform:uppercase;letter-spacing:.6px;">Investimentos</span>
-    <span style="display:flex;align-items:center;gap:8px;"><span style="font-size:16px;font-weight:800;color:#38bdf8;">${fmtFull(d.contaInvest?d.contaInvest.saldo:d.investido)}</span><span class="chev">›</span></span>
+    <span style="display:flex;align-items:center;gap:8px;flex-shrink:0;"><span style="font-size:16px;font-weight:800;color:#38bdf8;white-space:nowrap;">${fmtFull(d.contaInvest?d.contaInvest.saldo:d.investido)}</span><span class="chev">›</span></span>
   </div>
 
-  <div class="click" onclick="abre('divida')" style="background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.15);border-radius:12px;padding:13px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
-    <span style="font-size:12px;color:#7d8aa5;text-transform:uppercase;letter-spacing:.6px;">Dívida total (contas + faturas)</span>
-    <span style="display:flex;align-items:center;gap:8px;"><span style="font-size:17px;font-weight:800;color:${posGeral>=0?'#34d399':'#f87171'};">${fmtFull(posGeral)}</span><span class="chev">›</span></span>
+  <div class="click" onclick="abre('divida')" style="background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.15);border-radius:12px;padding:13px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+    <span style="font-size:12px;color:#7d8aa5;text-transform:uppercase;letter-spacing:.6px;">Dívida total</span>
+    <span style="display:flex;align-items:center;gap:8px;flex-shrink:0;"><span style="font-size:17px;font-weight:800;color:${posGeral>=0?'#34d399':'#f87171'};white-space:nowrap;">${fmtFull(posGeral)}</span><span class="chev">›</span></span>
   </div>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
