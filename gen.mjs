@@ -79,6 +79,11 @@ async function coletar() {
   const totalContas = contasCC.reduce((s,p)=> s + (num(p,"Saldo atual")||0), 0);
   const totalFaturas = cartoes.reduce((s,p)=> s + (num(p,"Fatura atual")||0), 0);
 
+  // saldo por titular (conta principal de cada um) pro destaque do topo
+  const saldoPorTitular = (t) => contasCC.filter(p=>sel(p,"Titular")===t).reduce((s,p)=> s + (num(p,"Saldo atual")||0), 0);
+  const saldoWes = saldoPorTitular("Wes");
+  const saldoIara = saldoPorTitular("Iara");
+
   // gastos por categoria (mes)
   const catMap = {};
   gastosMes.forEach(p => { const c = sel(p,"Categoria") || "Outros"; catMap[c] = (catMap[c]||0) + (num(p,"Valor")||0); });
@@ -110,6 +115,7 @@ async function coletar() {
     contasCC: contasCC.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), saldo:num(p,"Saldo atual"), situ:sel(p,"Situação"), obs:txt(p,"Observação")})),
     cartoes: cartoes.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), venc:txt(p,"Vencimento"), fatura:num(p,"Fatura atual"), limite:num(p,"Limite")})),
     totalContas, totalFaturas, top5, top3, lancPorCat, aportes,
+    saldoWes, saldoIara,
     totalGasto: saidas,
   };
 }
@@ -282,22 +288,28 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
       <img src="logo.png?v=${Date.now()}" alt="WI" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(56,189,248,.4);box-shadow:0 0 14px rgba(56,189,248,.25);">
       <div><div style="font-size:18px;font-weight:800;color:#eaf0fa;letter-spacing:-.2px;">WI Finance</div><div style="font-size:11px;color:#6b7a99;margin-top:1px;text-transform:capitalize;">${diaSem}, ${dataLonga} · ${hora}</div></div>
     </div>
-    <span style="width:8px;height:8px;border-radius:50%;background:#38bdf8;box-shadow:0 0 10px #38bdf8;"></span>
-  </div>
-
-  <div class="click" onclick="abre('divida')" style="background:linear-gradient(150deg,rgba(56,189,248,.14),rgba(34,211,238,.03));border:1px solid rgba(56,189,248,.24);border-radius:18px;padding:18px;margin-bottom:12px;display:flex;align-items:center;gap:16px;">
-    <div style="position:relative;width:78px;height:78px;flex-shrink:0;">
-      <svg viewBox="0 0 100 100" style="width:100%;height:100%;transform:rotate(-90deg);"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(56,189,248,.1)" stroke-width="9"/><circle cx="50" cy="50" r="42" fill="none" stroke="#38bdf8" stroke-width="9" stroke-linecap="round" stroke-dasharray="${dash}" stroke-dashoffset="${offset}" style="filter:drop-shadow(0 0 5px rgba(56,189,248,.6));"/></svg>
-      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:19px;font-weight:800;color:#38bdf8;">${pctMeta}%</div><div style="font-size:8px;color:#6b7a99;">meta</div></div>
+    <div style="position:relative;width:38px;height:38px;flex-shrink:0;" title="meta de investimento do mes">
+      <svg viewBox="0 0 100 100" style="width:100%;height:100%;transform:rotate(-90deg);"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(56,189,248,.12)" stroke-width="11"/><circle cx="50" cy="50" r="42" fill="none" stroke="#38bdf8" stroke-width="11" stroke-linecap="round" stroke-dasharray="${dash}" stroke-dashoffset="${offset}"/></svg>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#38bdf8;">${pctMeta}%</div>
     </div>
-    <div style="min-width:0;flex:1;"><div style="font-size:11px;color:#7d8aa5;letter-spacing:.8px;text-transform:uppercase;margin-bottom:3px;">Sobra do mês</div>
-      <div style="font-size:clamp(22px,7vw,30px);font-weight:800;letter-spacing:-1px;line-height:1.05;color:#eaf0fa;white-space:nowrap;">${fmtFull(d.sobra)}</div>
-      <div style="font-size:11px;color:#6b7a99;margin-top:5px;">investido ${fmtFull(d.investido)} de ${fmtFull(d.meta)}</div></div>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px;"><div style="font-size:10.5px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Entrou no mês</div><div style="font-size:21px;font-weight:800;margin-top:4px;color:#eaf0fa;">${fmt(d.renda)}</div></div>
-    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px;"><div style="font-size:10.5px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Saiu no mês</div><div style="font-size:21px;font-weight:800;margin-top:4px;color:#eaf0fa;">${fmt(d.saidas)}</div></div>
+  <div class="click" onclick="abre('contas')" style="background:linear-gradient(150deg,rgba(56,189,248,.13),rgba(34,211,238,.03));border:1px solid rgba(56,189,248,.22);border-radius:18px;padding:18px;margin-bottom:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="font-size:11px;color:#7d8aa5;letter-spacing:.8px;text-transform:uppercase;">Saldo do casal</div>
+      <span class="chev">›</span>
+    </div>
+    <div style="font-size:clamp(26px,8vw,34px);font-weight:800;letter-spacing:-1px;line-height:1.05;color:${d.totalContas>=0?'#34d399':'#f87171'};margin-top:2px;white-space:nowrap;">${fmtFull(d.totalContas)}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;">
+      <div style="background:rgba(0,0,0,.22);border-radius:12px;padding:12px;">
+        <div style="font-size:11px;color:#8a97b3;text-transform:uppercase;letter-spacing:.5px;">Wes</div>
+        <div style="font-size:19px;font-weight:800;margin-top:3px;color:${d.saldoWes>=0?'#34d399':'#f87171'};">${fmt(d.saldoWes)}</div>
+      </div>
+      <div style="background:rgba(0,0,0,.22);border-radius:12px;padding:12px;">
+        <div style="font-size:11px;color:#8a97b3;text-transform:uppercase;letter-spacing:.5px;">Iara</div>
+        <div style="font-size:19px;font-weight:800;margin-top:3px;color:${d.saldoIara>=0?'#34d399':'#f87171'};">${fmt(d.saldoIara)}</div>
+      </div>
+    </div>
   </div>
 
   <div class="click" onclick="abre('invest')" style="background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.15);border-radius:12px;padding:13px 16px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;">
@@ -305,9 +317,14 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
     <span style="display:flex;align-items:center;gap:8px;"><span style="font-size:16px;font-weight:800;color:#38bdf8;">${fmtFull(d.contaInvest?d.contaInvest.saldo:d.investido)}</span><span class="chev">›</span></span>
   </div>
 
-  <div class="click" onclick="abre('divida')" style="background:rgba(255,255,255,.02);border-radius:12px;padding:13px 16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;">
-    <span style="font-size:12px;color:#7d8aa5;text-transform:uppercase;letter-spacing:.6px;">Posição geral hoje</span>
+  <div class="click" onclick="abre('divida')" style="background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.15);border-radius:12px;padding:13px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:12px;color:#7d8aa5;text-transform:uppercase;letter-spacing:.6px;">Dívida total (contas + faturas)</span>
     <span style="display:flex;align-items:center;gap:8px;"><span style="font-size:17px;font-weight:800;color:${posGeral>=0?'#34d399':'#f87171'};">${fmtFull(posGeral)}</span><span class="chev">›</span></span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Entrou no mês</div><div style="font-size:18px;font-weight:800;margin-top:3px;color:#eaf0fa;">${fmt(d.renda)}</div></div>
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Saiu no mês</div><div style="font-size:18px;font-weight:800;margin-top:3px;color:#eaf0fa;">${fmt(d.saidas)}</div></div>
   </div>
 
   <div class="lbl">Contas correntes</div>
