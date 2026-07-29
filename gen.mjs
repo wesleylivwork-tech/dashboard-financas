@@ -115,12 +115,24 @@ async function coletar() {
     .map(p=>({desc:txt(p,"Descrição")||"Aporte", val:num(p,"Valor")||0, data:dataGasto(p)}))
     .sort((a,b)=>(b.data||"").localeCompare(a.data||""));
 
+  // tokens fortes pra casar gasto -> cartao (bandeira/banco/digitos)
+  const norm = s => String(s||"").toLowerCase().replace(/mastercard|\bmc\b/g,"master").replace(/p[aã]o/g,"pao");
+  const strongToks = s => [...new Set(norm(s).match(/visa|master|nubank|xp|gold|black|pao|7046|1009|5901|6047|6130/g)||[])];
+  const gastosCartao = gastos.map(p=>({desc:txt(p,"Descrição")||"?", val:num(p,"Valor")||0, data:dataGasto(p), quem:sel(p,"Quem pagou"), toks: strongToks(sel(p,"Forma de pagamento")+" "+(txt(p,"Descrição")||""))}));
+  const itensDoCartao = nomeCartao => { const ct = strongToks(nomeCartao); if(!ct.length) return []; return gastosCartao.filter(g=>g.toks.some(t=>ct.includes(t))).sort((a,b)=>(b.data||"").localeCompare(a.data||"")); };
+
+  // parcelados (compras em Nx / N/N / "parcela") pra aba Dividas
+  const parcInfo = desc => { const m=desc.match(/\((\d+)\s*x\)/i); if(m) return m[1]+"x"; const n=desc.match(/\((\d+)\/(\d+)\)/); if(n) return n[1]+"/"+n[2]; if(/parcel/i.test(desc)) return "parcelado"; return null; };
+  const parcelados = gastos.map(p=>({desc:txt(p,"Descrição")||"?", val:num(p,"Valor")||0, forma:sel(p,"Forma de pagamento"), quem:sel(p,"Quem pagou"), data:dataGasto(p), parc:parcInfo(txt(p,"Descrição")||"")}))
+    .filter(x=>x.parc).sort((a,b)=>(b.data||"").localeCompare(a.data||""));
+
   return {
     anoMes, renda, saidas, sobra, investido, meta,
     contaInvest: contaInvest ? { nome:txt(contaInvest,"Nome"), saldo:num(contaInvest,"Saldo atual")||0 } : null,
     contasCC: contasCC.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), saldo:num(p,"Saldo atual"), situ:sel(p,"Situação"), obs:txt(p,"Observação")})),
     dividas: dividas.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), saldo:num(p,"Saldo atual"), obs:txt(p,"Observação")})),
-    cartoes: cartoes.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), venc:txt(p,"Vencimento"), fatura:num(p,"Fatura atual"), limite:num(p,"Limite")})),
+    cartoes: cartoes.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), venc:txt(p,"Vencimento"), fatura:num(p,"Fatura atual"), limite:num(p,"Limite"), itens: itensDoCartao(txt(p,"Nome"))})),
+    parcelados,
     totalContas, totalFaturas, totalDividas, top5, ultimos, ultimos3d, lancPorCat, aportes,
     saldoWes, saldoIara,
     totalGasto: saidas,
@@ -200,9 +212,9 @@ function pgContas(d) {
 function pgCartoes(d) {
   const linhas = d.cartoes.map(c=>{
     const uso = (c.limite&&c.fatura!=null)? Math.min(100,Math.round(c.fatura/c.limite*100)) : null;
-    return `<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:18px;margin-bottom:12px;">
+    return `<div data-cart="${esc(c.nome)}" onclick="abreCartao(this.dataset.cart)" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:18px;margin-bottom:12px;cursor:pointer;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:${uso!=null?'14px':'0'};">
-        <div><div style="font-size:17px;font-weight:600;color:#eaf0fa;">${esc(c.nome)}</div><div style="font-size:13px;color:#6b7a99;margin-top:3px;">${c.venc?`vence ${esc(c.venc)}`:""}${c.titular?` · ${esc(c.titular)}`:""}</div></div>
+        <div><div style="font-size:17px;font-weight:600;color:#eaf0fa;">${esc(c.nome)} <span style="color:#5a6785;font-size:15px;">›</span></div><div style="font-size:13px;color:#6b7a99;margin-top:3px;">${c.venc?`vence ${esc(c.venc)}`:""}${c.titular?` · ${esc(c.titular)}`:""}</div></div>
         <div style="text-align:right;"><div style="font-size:22px;font-weight:800;color:#eaf0fa;">${c.fatura!=null?fmtFull(c.fatura):"-"}</div><div style="font-size:12px;color:#6b7a99;">fatura${c.limite?` · limite ${fmt(c.limite)}`:""}</div></div>
       </div>
       ${uso!=null?`<div style="height:8px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:${uso}%;background:${uso>80?'#f87171':'linear-gradient(90deg,#818cf8,#c084fc)'};border-radius:99px;"></div></div>`:""}
@@ -282,14 +294,20 @@ function html(d) {
       <span style="display:flex;align-items:center;gap:8px;"><span style="font-size:14px;font-weight:700;color:${cor};">${fmt(c.saldo)}</span><span style="font-size:10px;background:${bg};color:${cor};padding:2px 9px;border-radius:99px;">${badge}</span></span></div>`;
   }).join("") : `<div style="font-size:13px;color:#6b7a99;padding:10px 0;">nenhuma conta cadastrada ainda</div>`;
 
-  const cartoesHTML = d.cartoes.length ? d.cartoes.map((c,i)=>`<div style="display:flex;justify-content:space-between;padding:11px 0;${i<d.cartoes.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#aab6cc;">${esc(c.nome)}${c.venc?` · ${esc(c.venc)}`:""}</span><span style="font-size:13.5px;font-weight:600;color:#eaf0fa;">${c.fatura!=null?fmt(c.fatura):"-"}</span></div>`).join("") : `<div style="font-size:13px;color:#6b7a99;padding:10px 0;">nenhum cartão com fatura ainda</div>`;
+  const cartoesHTML = d.cartoes.length ? d.cartoes.map((c,i)=>`<div data-cart="${esc(c.nome)}" onclick="event.stopPropagation();abreCartao(this.dataset.cart)" style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;cursor:pointer;${i<d.cartoes.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#aab6cc;">${esc(c.nome)}${c.venc?` · ${esc(c.venc)}`:""}</span><span style="display:flex;align-items:center;gap:7px;"><span style="font-size:13.5px;font-weight:600;color:#eaf0fa;">${c.fatura!=null?fmt(c.fatura):"-"}</span><span style="color:#5a6785;font-size:15px;">›</span></span></div>`).join("") : `<div style="font-size:13px;color:#6b7a99;padding:10px 0;">nenhum cartão com fatura ainda</div>`;
 
   const ultimosHTML = d.ultimos.length ? d.ultimos.map((g,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;${i<d.ultimos.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#dbe3f0;">${esc(g.desc)}${g.quem?` <span style="color:#5a6785;font-size:11.5px;">${esc(g.quem)}${g.data?` · ${dataBR(g.data)}`:""}</span>`:""}</span><span style="font-size:13.5px;font-weight:700;color:#eaf0fa;white-space:nowrap;">${fmt(g.val)}</span></div>`).join("") : `<div style="font-size:13px;color:#6b7a99;padding:10px 0;">sem gastos no mês</div>`;
 
-  const dividasHTML = (d.dividas&&d.dividas.length) ? d.dividas.map((c,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;${i<d.dividas.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#dbe3f0;">${esc(c.nome)}${c.banco?` · ${esc(c.banco)}`:""}</span><span style="font-size:13.5px;font-weight:700;color:#f87171;white-space:nowrap;">${fmt(c.saldo)}</span></div>`).join("") : "";
+  const itensDiv = [
+    ...(d.dividas||[]).map(c=>({desc:c.nome, tag:c.banco||"empréstimo", val:Math.abs(c.saldo||0)})),
+    ...(d.parcelados||[]).map(p=>({desc:p.desc, tag:p.parc, val:p.val})),
+  ];
+  const dividasHTML = itensDiv.length ? itensDiv.map((c,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;${i<itensDiv.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#dbe3f0;">${esc(c.desc)}${c.tag?` <span style="color:#5a6785;font-size:11.5px;">${esc(c.tag)}</span>`:""}</span><span style="font-size:13.5px;font-weight:700;color:#f87171;white-space:nowrap;">${fmt(c.val)}</span></div>`).join("") : "";
 
   // dados de categoria pro JS (pagina interna)
   const catJSON = JSON.stringify(Object.fromEntries(Object.entries(d.lancPorCat).map(([k,v])=>[k,v])));
+  // dados de cartao pro JS (historico da fatura)
+  const cardJSON = JSON.stringify(Object.fromEntries(d.cartoes.map(c=>[c.nome, {fatura:c.fatura, venc:c.venc, limite:c.limite, itens:(c.itens||[]).map(x=>({desc:x.desc, val:x.val, data:x.data}))}])));
 
   return `<!DOCTYPE html>
 <html lang="pt-BR"><head>
@@ -396,6 +414,7 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
 <div id="divida" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Dívida & quitação</div>${pgDivida(d)}</div>
 <div id="lancamentos" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Lançamentos</div>${pgLancamentos(d)}</div>
 <div id="categoria" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;" id="catTit">Categoria</div><div id="catBody"></div></div>
+<div id="cartaodet" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;" id="cardTit">Cartão</div><div id="cardBody"></div></div>
 
 </div>
 <div style="text-align:center;font-size:11px;color:#3a4560;margin-top:16px;letter-spacing:2px;">WI FINANCE · PAINEL DO CASAL</div>
@@ -403,7 +422,8 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
 
 <script>
 var CATS = ${catJSON};
-var pags = ["home","invest","contas","cartoes","divida","categoria","lancamentos"];
+var CARDS = ${cardJSON};
+var pags = ["home","invest","contas","cartoes","divida","categoria","lancamentos","cartaodet"];
 function show(id){ pags.forEach(function(p){ document.getElementById(p).classList.add("hidden"); }); var e=document.getElementById(id); e.classList.remove("hidden"); e.style.animation="none"; e.offsetHeight; e.style.animation=""; window.scrollTo(0,0); }
 function abre(id){ show(id); }
 function volta(){ show("home"); }
@@ -416,6 +436,18 @@ function abreCat(nome){
   var body = l.length? l.map(function(x){ return '<div style="display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:15px;color:#dbe3f0;">'+x.desc+(x.data?' <span style=\\'color:#5a6785;font-size:13px;\\'>'+(x.data?x.data.slice(8,10)+"/"+x.data.slice(5,7):"")+'</span>':'')+'</span><span style="font-size:15px;font-weight:700;color:#eaf0fa;">'+fnum(x.val)+'</span></div>'; }).join("") : '<div style="font-size:14px;color:#6b7a99;padding:14px 0;">sem lançamentos</div>';
   document.getElementById("catBody").innerHTML = head + body;
   show("categoria");
+}
+function abreCartao(nome){
+  var c = CARDS[nome]||{itens:[]};
+  var itens = c.itens||[];
+  var somaItens = itens.reduce(function(s,x){return s+x.val;},0);
+  document.getElementById("cardTit").textContent = nome;
+  var head = '<div style="text-align:center;margin:8px 0 18px;"><div style="font-size:13px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;">Fatura atual</div><div style="font-size:38px;font-weight:800;color:#eaf0fa;letter-spacing:-1px;margin-top:4px;">'+(c.fatura!=null?fnum(c.fatura):"-")+'</div><div style="font-size:13px;color:#6b7a99;margin-top:4px;">'+(c.venc?"vence "+c.venc:"")+(c.limite?" · limite "+fnum(c.limite):"")+'</div></div>';
+  var lbl = '<div style="font-size:11px;color:#7d8aa5;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px;font-weight:600;">Compras neste cartão</div>';
+  var body = itens.length? itens.map(function(x){ return '<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:14.5px;color:#dbe3f0;">'+x.desc+(x.data?' <span style=\\'color:#5a6785;font-size:12px;\\'>'+(x.data.slice(8,10)+"/"+x.data.slice(5,7))+'</span>':'')+'</span><span style="font-size:14.5px;font-weight:700;color:#eaf0fa;white-space:nowrap;">'+fnum(x.val)+'</span></div>'; }).join("") : '<div style="font-size:13.5px;color:#6b7a99;padding:14px 0;">ainda sem compras detalhadas deste cartão. O total da fatura acima é o oficial.</div>';
+  var rodape = itens.length? '<div style="display:flex;justify-content:space-between;padding:12px 2px 0;font-size:12px;color:#6b7a99;"><span>compras listadas</span><span>'+fnum(somaItens)+'</span></div>' : "";
+  document.getElementById("cardBody").innerHTML = head + lbl + body + rodape;
+  show("cartaodet");
 }
 </script>
 </body></html>`;
