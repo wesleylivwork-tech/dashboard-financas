@@ -16,6 +16,7 @@ const REPO = process.env.REPO || "wesleylivwork-tech/dashboard-financas";
 const DB_CONTAS = "bf5a6857321b49ce98d683d1a7822c91";
 const DB_GASTOS = "7a2296707d8247eb9c205ec768d5a0d7";
 const DB_MENSAL = "1941663727fa46afb6dab84a6cfcb8d9";
+const DB_ITENS  = "be48663d7ede42349651f25b26a944f2";
 
 const DRY = process.argv.includes("--dry");
 
@@ -57,6 +58,9 @@ async function coletar() {
   const [contas, gastos, mensal] = await Promise.all([
     query(DB_CONTAS), query(DB_GASTOS), query(DB_MENSAL),
   ]);
+  // itens de fatura (base separada; tolerante a erro/acesso)
+  let itensFat = [];
+  try { itensFat = await query(DB_ITENS); } catch(e) { itensFat = []; }
 
   const hoje = new Date();
   const anoMes = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,"0")}`;
@@ -119,7 +123,15 @@ async function coletar() {
   const norm = s => String(s||"").toLowerCase().replace(/mastercard|\bmc\b/g,"master").replace(/p[aã]o/g,"pao");
   const strongToks = s => [...new Set(norm(s).match(/visa|master|nubank|xp|gold|black|pao|7046|1009|5901|6047|6130/g)||[])];
   const gastosCartao = gastos.map(p=>({desc:txt(p,"Descrição")||"?", val:num(p,"Valor")||0, data:dataGasto(p), quem:sel(p,"Quem pagou"), toks: strongToks(sel(p,"Forma de pagamento")+" "+(txt(p,"Descrição")||""))}));
-  const itensDoCartao = nomeCartao => { const ct = strongToks(nomeCartao); if(!ct.length) return []; return gastosCartao.filter(g=>g.toks.some(t=>ct.includes(t))).sort((a,b)=>(b.data||"").localeCompare(a.data||"")); };
+  // itens vindos da base Itens de Fatura (fonte principal do historico do cartao)
+  const itensFatLista = itensFat.map(p=>({desc:txt(p,"Compra")||"?", val:num(p,"Valor")||0, data:(dateStart(p,"Data")||"").slice(0,10), cartao:txt(p,"Cartão")||"", parc:txt(p,"Parcela")||""}));
+  const matchCart = (a,b) => { const ta=strongToks(a), tb=strongToks(b); return (a&&b&&a.trim().toLowerCase()===b.trim().toLowerCase()) || (ta.length&&tb.length&&ta.some(t=>tb.includes(t))); };
+  const itensDoCartao = nomeCartao => {
+    const daBase = itensFatLista.filter(x => x.cartao && matchCart(x.cartao, nomeCartao));
+    if (daBase.length) return daBase.sort((a,b)=>(b.data||"").localeCompare(a.data||""));
+    const ct = strongToks(nomeCartao); if(!ct.length) return [];
+    return gastosCartao.filter(g=>g.toks.some(t=>ct.includes(t))).sort((a,b)=>(b.data||"").localeCompare(a.data||""));
+  };
 
   // parcelados (compras em Nx / N/N / "parcela") pra aba Dividas
   const parcInfo = desc => { const m=desc.match(/\((\d+)\s*x\)/i); if(m) return m[1]+"x"; const n=desc.match(/\((\d+)\/(\d+)\)/); if(n) return n[1]+"/"+n[2]; if(/parcel/i.test(desc)) return "parcelado"; return null; };
