@@ -21,7 +21,7 @@ let terc={Yago:0,Patricia:0,Fatech:0}, fatura=0, dedup=0;
 for(const p of pages){
   const s=(txt(p)+" "+lug(p)).toLowerCase();
   let nome=null;
-  if(/\byago\b/.test(s)) nome="Yago"; else if(/patr[ií]cia|\[patr/.test(s)) nome="Patricia"; else if(/fatech/.test(s)) nome="Fatech";
+  if(/\byago\b/.test(s)) nome="Yago"; else if(/patr[ií]cia|\[patr/.test(s)) nome="Patricia"; else if(/fatech|f[aá]bio rog|63\.?992\.?833|33\.?362\.?677/.test(s)) nome="Fatech";
   if(nome && cat(p)!=="Terceiros"){ if(await setCat(p.id,"Terceiros","Terceiro: "+nome)){terc[nome]++;} await sleep(120); p._done="terc"; }
 }
 // PASSO 2: itens de fatura ja presentes na base Itens de Fatura -> categoria "Item Fatura" (NAO apaga; so nao conta)
