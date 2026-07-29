@@ -94,6 +94,9 @@ async function coletar() {
   const gastosMes = gastos.filter(p => dataGasto(p).slice(0,7) === anoMes && ehConsumo(p));
   const saidas = gastosMes.reduce((s,p)=> s + (num(p,"Valor")||0), 0);
   const sobra = renda - saidas;
+  // fixo vs variavel (do campo Tipo)
+  const fixoMes = gastosMes.filter(p=>/fix/i.test(sel(p,"Tipo"))).reduce((s,p)=>s+(num(p,"Valor")||0),0);
+  const varMes = saidas - fixoMes;
 
   // conta investimentos separada; dividas parceladas separadas das contas
   const contaInvest = contas.find(p => txt(p,"Nome").toLowerCase().includes("investiment"));
@@ -165,7 +168,7 @@ async function coletar() {
     cartoes: cartoes.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), venc:txt(p,"Vencimento"), fatura:num(p,"Fatura atual"), limite:num(p,"Limite"), itens: itensDoCartao(txt(p,"Nome"))})),
     parcelados,
     totalContas, totalFaturas, totalDividas, top5, ultimos, ultimos3d, lancPorCat, aportes,
-    saldoWes, saldoIara, terceiros,
+    saldoWes, saldoIara, terceiros, fixoMes, varMes,
     totalGasto: saidas,
   };
 }
@@ -329,11 +332,20 @@ function html(d) {
 
   const ultimosHTML = d.ultimos.length ? d.ultimos.map((g,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;${i<d.ultimos.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#dbe3f0;">${esc(g.desc)}${g.quem?` <span style="color:#5a6785;font-size:11.5px;">${esc(g.quem)}${g.data?` · ${dataBR(g.data)}`:""}</span>`:""}</span><span style="font-size:13.5px;font-weight:700;color:#eaf0fa;white-space:nowrap;">${fmt(g.val)}</span></div>`).join("") : `<div style="font-size:13px;color:#6b7a99;padding:10px 0;">sem gastos no mês</div>`;
 
+  // prazo de quitação a partir do padrão de parcela "N/M"
+  const prazoQuit = parc => {
+    const m = String(parc||"").match(/(\d+)\s*\/\s*(\d+)/);
+    if(!m) return "";
+    const faltam = (+m[2]) - (+m[1]);
+    if(faltam<=0) return "última parcela";
+    const fim = new Date(hoje.getFullYear(), hoje.getMonth()+faltam, 1);
+    return `faltam ${faltam} · acaba ${fim.toLocaleDateString("pt-BR",{month:"short",year:"2-digit"}).replace(".","")}`;
+  };
   const itensDiv = [
-    ...(d.dividas||[]).map(c=>({desc:c.nome, tag:c.banco||"empréstimo", val:Math.abs(c.saldo||0)})),
-    ...(d.parcelados||[]).map(p=>({desc:p.desc, tag:p.parc, val:p.val})),
+    ...(d.dividas||[]).map(c=>({desc:c.nome, tag:c.banco||"empréstimo", val:Math.abs(c.saldo||0), prazo:""})),
+    ...(d.parcelados||[]).map(p=>({desc:p.desc, tag:p.parc, val:p.val, prazo:prazoQuit(p.parc)})),
   ].sort((a,b)=>b.val-a.val);
-  const linhaDiv = (c,i,n)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;${i<n-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#dbe3f0;">${esc(c.desc)}${c.tag?` <span style="color:#5a6785;font-size:11.5px;">${esc(c.tag)}</span>`:""}</span><span style="font-size:13.5px;font-weight:700;color:#f87171;white-space:nowrap;">${fmt(c.val)}</span></div>`;
+  const linhaDiv = (c,i,n)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;${i<n-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#dbe3f0;">${esc(c.desc)}${c.tag?` <span style="color:#5a6785;font-size:11.5px;">${esc(c.tag)}</span>`:""}${c.prazo?`<br><span style="color:#5eead4;font-size:11px;">${c.prazo}</span>`:""}</span><span style="font-size:13.5px;font-weight:700;color:#f87171;white-space:nowrap;">${fmt(c.val)}</span></div>`;
   const dividasTop = itensDiv.slice(0,3);
   const dividasHTML = itensDiv.length ? dividasTop.map((c,i)=>linhaDiv(c,i,dividasTop.length)).join("") : "";
   const totalDiv = itensDiv.reduce((s,c)=>s+c.val,0);
@@ -427,9 +439,13 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
     <span style="display:flex;align-items:center;gap:8px;flex-shrink:0;"><span style="font-size:17px;font-weight:800;color:${posGeral>=0?'#34d399':'#f87171'};white-space:nowrap;">${fmtFull(posGeral)}</span><span class="chev">›</span></span>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
     <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Entrou no mês</div><div style="font-size:18px;font-weight:800;margin-top:3px;color:#eaf0fa;">${fmt(d.renda)}</div></div>
-    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Saiu no mês</div><div style="font-size:18px;font-weight:800;margin-top:3px;color:#eaf0fa;">${fmt(d.saidas)}</div></div>
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Gasto real no mês</div><div style="font-size:18px;font-weight:800;margin-top:3px;color:#eaf0fa;">${fmt(d.saidas)}</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+    <div style="background:rgba(255,255,255,.02);border-radius:12px;padding:11px;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Fixo</div><div style="font-size:16px;font-weight:700;margin-top:2px;color:#818cf8;">${fmt(d.fixoMes||0)}</div></div>
+    <div style="background:rgba(255,255,255,.02);border-radius:12px;padding:11px;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Variável</div><div style="font-size:16px;font-weight:700;margin-top:2px;color:#5eead4;">${fmt(d.varMes||0)}</div></div>
   </div>
 
   <div class="lbl">Contas correntes</div>
