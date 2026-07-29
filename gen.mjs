@@ -72,9 +72,18 @@ async function coletar() {
 
   // data do gasto: usa campo Data se existir, senao created_time
   const dataGasto = p => (dateStart(p,"Data") || p.created_time || "").slice(0,10);
-  // categorias que NAO sao consumo (nao entram no "Saiu no mes" nem na rosca)
-  const NAO_CONSUMO = ["Transferência","Transferencia","Dívida","Divida","Taxas"];
+  // categorias que NAO sao consumo do casal (nao entram no "Saiu no mes" nem na rosca)
+  const NAO_CONSUMO = ["Transferência","Transferencia","Dívida","Divida","Taxas","Terceiros","Item Fatura","Duplicado"];
   const ehConsumo = p => !NAO_CONSUMO.includes(sel(p,"Categoria"));
+  // terceiros (gasto de outra pessoa no cartao do casal) agrupado por nome
+  const terceirosMap = {};
+  gastos.filter(p=>sel(p,"Categoria")==="Terceiros").forEach(p=>{
+    const obs = txt(p,"Observação"); const m = obs.match(/Terceiro:\s*(.+)/i); const nome = m?m[1].trim():"Outro";
+    (terceirosMap[nome] = terceirosMap[nome]||{nome, total:0, itens:[]});
+    terceirosMap[nome].total += num(p,"Valor")||0;
+    terceirosMap[nome].itens.push({desc:txt(p,"Descrição")||"?", val:num(p,"Valor")||0, data:dataGasto(p)});
+  });
+  const terceiros = Object.values(terceirosMap).sort((a,b)=>b.total-a.total);
   const gastosMes = gastos.filter(p => dataGasto(p).slice(0,7) === anoMes && ehConsumo(p));
   const saidas = gastosMes.reduce((s,p)=> s + (num(p,"Valor")||0), 0);
   const sobra = renda - saidas;
@@ -149,7 +158,7 @@ async function coletar() {
     cartoes: cartoes.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), venc:txt(p,"Vencimento"), fatura:num(p,"Fatura atual"), limite:num(p,"Limite"), itens: itensDoCartao(txt(p,"Nome"))})),
     parcelados,
     totalContas, totalFaturas, totalDividas, top5, ultimos, ultimos3d, lancPorCat, aportes,
-    saldoWes, saldoIara,
+    saldoWes, saldoIara, terceiros,
     totalGasto: saidas,
   };
 }
@@ -327,6 +336,16 @@ function html(d) {
       <div style="font-size:13px;color:#6b7a99;margin-top:4px;">${itensDiv.length} item${itensDiv.length!=1?'s':''}</div></div>
     ${itensDiv.map((c,i)=>linhaDiv(c,i,itensDiv.length)).join("")}` : `<div style="font-size:14px;color:#6b7a99;padding:14px 0;">nada parcelado.</div>`;
 
+  // seção Terceiros (por pessoa) — gastos de outras pessoas no cartão do casal
+  const terc = d.terceiros || [];
+  const totalTerc = terc.reduce((s,t)=>s+t.total,0);
+  const tercHTML = terc.length ? terc.map((t,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;${i<terc.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:14px;color:#dbe3f0;">${esc(t.nome)} <span style="color:#5a6785;font-size:11.5px;">${t.itens.length} lanç.</span></span><span style="font-size:14px;font-weight:700;color:#c084fc;white-space:nowrap;">${fmt(t.total)}</span></div>`).join("") : "";
+  const tercFullHTML = terc.length ? `<div style="text-align:center;margin:8px 0 20px;">
+      <div style="font-size:13px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;">Total de terceiros (a cobrar)</div>
+      <div style="font-size:36px;font-weight:800;color:#c084fc;letter-spacing:-1px;margin-top:4px;">${fmtFull(totalTerc)}</div>
+      <div style="font-size:13px;color:#6b7a99;margin-top:4px;">não é gasto de vocês</div></div>
+    ${terc.map(t=>`<div style="margin-bottom:16px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-size:15px;font-weight:700;color:#eaf0fa;">${esc(t.nome)}</span><span style="font-size:14px;font-weight:700;color:#c084fc;">${fmt(t.total)}</span></div>${t.itens.sort((a,b)=>b.val-a.val).map(x=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);"><span style="font-size:13px;color:#aab6cc;">${esc(x.desc)}${x.data?` <span style="color:#5a6785;font-size:11px;">${dataBR(x.data)}</span>`:""}</span><span style="font-size:13px;color:#dbe3f0;white-space:nowrap;">${fmt(x.val)}</span></div>`).join("")}</div>`).join("")}` : `<div style="font-size:14px;color:#6b7a99;padding:14px 0;">nenhum gasto de terceiro marcado ainda.</div>`;
+
   // dados de categoria pro JS (pagina interna)
   const catJSON = JSON.stringify(Object.fromEntries(Object.entries(d.lancPorCat).map(([k,v])=>[k,v])));
   // dados de cartao pro JS (historico da fatura)
@@ -418,6 +437,10 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
   <div class="click" onclick="abre('dividas')" style="background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.12);border-radius:14px;padding:6px 14px;margin-bottom:18px;">${dividasHTML}
     <div style="display:flex;justify-content:flex-end;align-items:center;gap:5px;color:#5a6785;font-size:12px;padding:8px 0 4px;">ver todos <span class="chev">›</span></div></div>` : ""}
 
+  ${tercHTML ? `<div class="lbl">Terceiros · a cobrar</div>
+  <div class="click" onclick="abre('terceiros')" style="background:rgba(192,132,252,.05);border:1px solid rgba(192,132,252,.15);border-radius:14px;padding:6px 14px;margin-bottom:18px;">${tercHTML}
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:5px;color:#5a6785;font-size:12px;padding:8px 0 4px;">ver detalhes <span class="chev">›</span></div></div>` : ""}
+
   <div class="lbl">Gastos do mês por categoria</div>
   <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:18px;padding:18px 16px;margin-bottom:18px;">${roscaGrande(d.top5, d.totalGasto)}</div>
 
@@ -438,6 +461,7 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
 <div id="divida" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Dívida & quitação</div>${pgDivida(d)}</div>
 <div id="lancamentos" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Lançamentos</div>${pgLancamentos(d)}</div>
 <div id="dividas" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Dívidas & parcelados</div>${dividasFullHTML}</div>
+<div id="terceiros" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Terceiros · a cobrar</div>${tercFullHTML}</div>
 <div id="categoria" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;" id="catTit">Categoria</div><div id="catBody"></div></div>
 <div id="cartaodet" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;" id="cardTit">Cartão</div><div id="cardBody"></div></div>
 
@@ -448,7 +472,7 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
 <script>
 var CATS = ${catJSON};
 var CARDS = ${cardJSON};
-var pags = ["home","invest","contas","cartoes","divida","categoria","lancamentos","cartaodet","dividas"];
+var pags = ["home","invest","contas","cartoes","divida","categoria","lancamentos","cartaodet","dividas","terceiros"];
 function show(id){ pags.forEach(function(p){ document.getElementById(p).classList.add("hidden"); }); var e=document.getElementById(id); e.classList.remove("hidden"); e.style.animation="none"; e.offsetHeight; e.style.animation=""; window.scrollTo(0,0); }
 function abre(id){ show(id); }
 function volta(){ show("home"); }
