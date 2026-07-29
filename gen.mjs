@@ -313,8 +313,16 @@ function html(d) {
   const itensDiv = [
     ...(d.dividas||[]).map(c=>({desc:c.nome, tag:c.banco||"empréstimo", val:Math.abs(c.saldo||0)})),
     ...(d.parcelados||[]).map(p=>({desc:p.desc, tag:p.parc, val:p.val})),
-  ];
-  const dividasHTML = itensDiv.length ? itensDiv.map((c,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;${i<itensDiv.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#dbe3f0;">${esc(c.desc)}${c.tag?` <span style="color:#5a6785;font-size:11.5px;">${esc(c.tag)}</span>`:""}</span><span style="font-size:13.5px;font-weight:700;color:#f87171;white-space:nowrap;">${fmt(c.val)}</span></div>`).join("") : "";
+  ].sort((a,b)=>b.val-a.val);
+  const linhaDiv = (c,i,n)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;${i<n-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#dbe3f0;">${esc(c.desc)}${c.tag?` <span style="color:#5a6785;font-size:11.5px;">${esc(c.tag)}</span>`:""}</span><span style="font-size:13.5px;font-weight:700;color:#f87171;white-space:nowrap;">${fmt(c.val)}</span></div>`;
+  const dividasTop = itensDiv.slice(0,3);
+  const dividasHTML = itensDiv.length ? dividasTop.map((c,i)=>linhaDiv(c,i,dividasTop.length)).join("") : "";
+  const totalDiv = itensDiv.reduce((s,c)=>s+c.val,0);
+  const dividasFullHTML = itensDiv.length ? `<div style="text-align:center;margin:8px 0 20px;">
+      <div style="font-size:13px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;">Total parcelado + empréstimos</div>
+      <div style="font-size:36px;font-weight:800;color:#f87171;letter-spacing:-1px;margin-top:4px;">${fmtFull(totalDiv)}</div>
+      <div style="font-size:13px;color:#6b7a99;margin-top:4px;">${itensDiv.length} item${itensDiv.length!=1?'s':''}</div></div>
+    ${itensDiv.map((c,i)=>linhaDiv(c,i,itensDiv.length)).join("")}` : `<div style="font-size:14px;color:#6b7a99;padding:14px 0;">nada parcelado.</div>`;
 
   // dados de categoria pro JS (pagina interna)
   const catJSON = JSON.stringify(Object.fromEntries(Object.entries(d.lancPorCat).map(([k,v])=>[k,v])));
@@ -404,7 +412,8 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
     <div style="display:flex;justify-content:flex-end;align-items:center;gap:5px;color:#5a6785;font-size:12px;margin-top:8px;">ver detalhes <span class="chev">›</span></div></div>
 
   ${dividasHTML ? `<div class="lbl">Dívidas · empréstimos</div>
-  <div style="background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.12);border-radius:14px;padding:6px 14px;margin-bottom:18px;">${dividasHTML}</div>` : ""}
+  <div class="click" onclick="abre('dividas')" style="background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.12);border-radius:14px;padding:6px 14px;margin-bottom:18px;">${dividasHTML}
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:5px;color:#5a6785;font-size:12px;padding:8px 0 4px;">ver todos <span class="chev">›</span></div></div>` : ""}
 
   <div class="lbl">Gastos do mês por categoria</div>
   <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:18px;padding:18px 16px;margin-bottom:18px;">${roscaGrande(d.top5, d.totalGasto)}</div>
@@ -425,6 +434,7 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
 <div id="cartoes" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Cartões</div>${pgCartoes(d)}</div>
 <div id="divida" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Dívida & quitação</div>${pgDivida(d)}</div>
 <div id="lancamentos" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Lançamentos</div>${pgLancamentos(d)}</div>
+<div id="dividas" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Dívidas & parcelados</div>${dividasFullHTML}</div>
 <div id="categoria" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;" id="catTit">Categoria</div><div id="catBody"></div></div>
 <div id="cartaodet" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;" id="cardTit">Cartão</div><div id="cardBody"></div></div>
 
@@ -435,7 +445,7 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
 <script>
 var CATS = ${catJSON};
 var CARDS = ${cardJSON};
-var pags = ["home","invest","contas","cartoes","divida","categoria","lancamentos","cartaodet"];
+var pags = ["home","invest","contas","cartoes","divida","categoria","lancamentos","cartaodet","dividas"];
 function show(id){ pags.forEach(function(p){ document.getElementById(p).classList.add("hidden"); }); var e=document.getElementById(id); e.classList.remove("hidden"); e.style.animation="none"; e.offsetHeight; e.style.animation=""; window.scrollTo(0,0); }
 function abre(id){ show(id); }
 function volta(){ show("home"); }
