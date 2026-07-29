@@ -76,12 +76,19 @@ async function coletar() {
   const NAO_CONSUMO = ["Transferência","Transferencia","Dívida","Divida","Taxas","Terceiros","Item Fatura","Duplicado"];
   const ehConsumo = p => !NAO_CONSUMO.includes(sel(p,"Categoria"));
   // terceiros (gasto de outra pessoa no cartao do casal) agrupado por nome
+  // fontes: base de Gastos (categoria Terceiros) + base Itens de Fatura (campo Terceiro)
   const terceirosMap = {};
-  gastos.filter(p=>sel(p,"Categoria")==="Terceiros").forEach(p=>{
-    const obs = txt(p,"Observação"); const m = obs.match(/Terceiro:\s*(.+)/i); const nome = m?m[1].trim():"Outro";
+  const addTerc = (nome, desc, valor, data) => {
     (terceirosMap[nome] = terceirosMap[nome]||{nome, total:0, itens:[]});
-    terceirosMap[nome].total += num(p,"Valor")||0;
-    terceirosMap[nome].itens.push({desc:txt(p,"Descrição")||"?", val:num(p,"Valor")||0, data:dataGasto(p)});
+    terceirosMap[nome].total += valor||0;
+    terceirosMap[nome].itens.push({desc, val:valor||0, data});
+  };
+  gastos.filter(p=>sel(p,"Categoria")==="Terceiros").forEach(p=>{
+    const obs = txt(p,"Observação"); const m = obs.match(/Terceiro:\s*(.+)/i);
+    addTerc(m?m[1].trim():"Outro", txt(p,"Descrição")||"?", num(p,"Valor")||0, dataGasto(p));
+  });
+  itensFat.filter(p=>txt(p,"Terceiro")).forEach(p=>{
+    addTerc(txt(p,"Terceiro").trim(), (txt(p,"Compra")||"?")+" · "+txt(p,"Cartão"), num(p,"Valor")||0, (dateStart(p,"Data")||"").slice(0,10));
   });
   const terceiros = Object.values(terceirosMap).sort((a,b)=>b.total-a.total);
   const gastosMes = gastos.filter(p => dataGasto(p).slice(0,7) === anoMes && ehConsumo(p));
@@ -136,7 +143,7 @@ async function coletar() {
   const strongToks = s => [...new Set(norm(s).match(/visa|master|nubank|xp|gold|black|pao|7046|1009|5901|6047|6130/g)||[])];
   const gastosCartao = gastos.map(p=>({desc:txt(p,"Descrição")||"?", val:num(p,"Valor")||0, data:dataGasto(p), quem:sel(p,"Quem pagou"), toks: strongToks(sel(p,"Forma de pagamento")+" "+(txt(p,"Descrição")||""))}));
   // itens vindos da base Itens de Fatura (fonte principal do historico do cartao)
-  const itensFatLista = itensFat.map(p=>({desc:txt(p,"Compra")||"?", val:num(p,"Valor")||0, data:(dateStart(p,"Data")||"").slice(0,10), cartao:txt(p,"Cartão")||"", parc:txt(p,"Parcela")||""}));
+  const itensFatLista = itensFat.map(p=>({desc:txt(p,"Compra")||"?", val:num(p,"Valor")||0, data:(dateStart(p,"Data")||"").slice(0,10), cartao:txt(p,"Cartão")||"", parc:txt(p,"Parcela")||"", terceiro:txt(p,"Terceiro")||""}));
   const matchCart = (a,b) => { const ta=strongToks(a), tb=strongToks(b); return (a&&b&&a.trim().toLowerCase()===b.trim().toLowerCase()) || (ta.length&&tb.length&&ta.some(t=>tb.includes(t))); };
   const itensDoCartao = nomeCartao => {
     const daBase = itensFatLista.filter(x => x.cartao && matchCart(x.cartao, nomeCartao));
@@ -349,7 +356,7 @@ function html(d) {
   // dados de categoria pro JS (pagina interna)
   const catJSON = JSON.stringify(Object.fromEntries(Object.entries(d.lancPorCat).map(([k,v])=>[k,v])));
   // dados de cartao pro JS (historico da fatura)
-  const cardJSON = JSON.stringify(Object.fromEntries(d.cartoes.map(c=>[c.nome, {fatura:c.fatura, venc:c.venc, limite:c.limite, itens:(c.itens||[]).map(x=>({desc:x.desc, val:x.val, data:x.data}))}])));
+  const cardJSON = JSON.stringify(Object.fromEntries(d.cartoes.map(c=>[c.nome, {fatura:c.fatura, venc:c.venc, limite:c.limite, itens:(c.itens||[]).map(x=>({desc:x.desc, val:x.val, data:x.data, terc:x.terceiro||""}))}])));
 
   return `<!DOCTYPE html>
 <html lang="pt-BR"><head>
@@ -490,10 +497,13 @@ function abreCartao(nome){
   var c = CARDS[nome]||{itens:[]};
   var itens = c.itens||[];
   var somaItens = itens.reduce(function(s,x){return s+x.val;},0);
+  var tercTot = itens.reduce(function(s,x){return s+(x.terc?x.val:0);},0);
+  var iaraTot = somaItens - tercTot;
   document.getElementById("cardTit").textContent = nome;
   var head = '<div style="text-align:center;margin:8px 0 18px;"><div style="font-size:13px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;">Fatura atual</div><div style="font-size:38px;font-weight:800;color:#eaf0fa;letter-spacing:-1px;margin-top:4px;">'+(c.fatura!=null?fnum(c.fatura):"-")+'</div><div style="font-size:13px;color:#6b7a99;margin-top:4px;">'+(c.venc?"vence "+c.venc:"")+(c.limite?" · limite "+fnum(c.limite):"")+'</div></div>';
+  if(tercTot>0){ head += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;"><div style="background:rgba(255,255,255,.03);border-radius:12px;padding:12px;"><div style="font-size:11px;color:#6b7a99;text-transform:uppercase;">Detectado do casal</div><div style="font-size:18px;font-weight:800;color:#34d399;margin-top:3px;">'+fnum(iaraTot)+'</div></div><div style="background:rgba(192,132,252,.08);border-radius:12px;padding:12px;"><div style="font-size:11px;color:#6b7a99;text-transform:uppercase;">De terceiros</div><div style="font-size:18px;font-weight:800;color:#c084fc;margin-top:3px;">'+fnum(tercTot)+'</div></div></div>'; }
   var lbl = '<div style="font-size:11px;color:#7d8aa5;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px;font-weight:600;">Compras neste cartão</div>';
-  var body = itens.length? itens.map(function(x){ return '<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:14.5px;color:#dbe3f0;">'+x.desc+(x.data?' <span style=\\'color:#5a6785;font-size:12px;\\'>'+(x.data.slice(8,10)+"/"+x.data.slice(5,7))+'</span>':'')+'</span><span style="font-size:14.5px;font-weight:700;color:#eaf0fa;white-space:nowrap;">'+fnum(x.val)+'</span></div>'; }).join("") : '<div style="font-size:13.5px;color:#6b7a99;padding:14px 0;">ainda sem compras detalhadas deste cartão. O total da fatura acima é o oficial.</div>';
+  var body = itens.length? itens.map(function(x){ var tag=x.terc?' <span style=\\'color:#c084fc;font-size:11px;\\'>'+x.terc+'</span>':''; return '<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:14.5px;color:#dbe3f0;">'+x.desc+tag+(x.data?' <span style=\\'color:#5a6785;font-size:12px;\\'>'+(x.data.slice(8,10)+"/"+x.data.slice(5,7))+'</span>':'')+'</span><span style="font-size:14.5px;font-weight:700;color:'+(x.terc?"#c084fc":"#eaf0fa")+';white-space:nowrap;">'+fnum(x.val)+'</span></div>'; }).join("") : '<div style="font-size:13.5px;color:#6b7a99;padding:14px 0;">ainda sem compras detalhadas deste cartão. O total da fatura acima é o oficial.</div>';
   var rodape = itens.length? '<div style="display:flex;justify-content:space-between;padding:12px 2px 0;font-size:12px;color:#6b7a99;"><span>compras listadas</span><span>'+fnum(somaItens)+'</span></div>' : "";
   document.getElementById("cardBody").innerHTML = head + lbl + body + rodape;
   show("cartaodet");
