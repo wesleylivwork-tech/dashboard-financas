@@ -72,7 +72,10 @@ async function coletar() {
 
   // data do gasto: usa campo Data se existir, senao created_time
   const dataGasto = p => (dateStart(p,"Data") || p.created_time || "").slice(0,10);
-  const gastosMes = gastos.filter(p => dataGasto(p).slice(0,7) === anoMes);
+  // categorias que NAO sao consumo (nao entram no "Saiu no mes" nem na rosca)
+  const NAO_CONSUMO = ["Transferência","Transferencia","Dívida","Divida","Taxas"];
+  const ehConsumo = p => !NAO_CONSUMO.includes(sel(p,"Categoria"));
+  const gastosMes = gastos.filter(p => dataGasto(p).slice(0,7) === anoMes && ehConsumo(p));
   const saidas = gastosMes.reduce((s,p)=> s + (num(p,"Valor")||0), 0);
   const sobra = renda - saidas;
 
@@ -109,7 +112,7 @@ async function coletar() {
 
   // lancamentos recentes (todos, mais novos primeiro) -> 3 na home, 3 dias na subpagina
   const d3 = new Date(Date.now()-3*864e5).toISOString().slice(0,10);
-  const recentes = gastos.map(p=>({desc: txt(p,"Descrição")||"?", val: num(p,"Valor")||0, quem: sel(p,"Quem pagou"), cat: sel(p,"Categoria")||"Outros", data: dataGasto(p), _c: p.created_time||""}))
+  const recentes = gastos.filter(ehConsumo).map(p=>({desc: txt(p,"Descrição")||"?", val: num(p,"Valor")||0, quem: sel(p,"Quem pagou"), cat: sel(p,"Categoria")||"Outros", data: dataGasto(p), _c: p.created_time||""}))
     .sort((a,b)=> (b.data+b._c).localeCompare(a.data+a._c));
   const ultimos = recentes.slice(0,3);
   const ultimos3d = recentes.filter(x => x.data >= d3);
