@@ -12,44 +12,29 @@ const lug=p=>p.properties?.Lugar?.rich_text?.[0]?.plain_text||"";
 const val=p=>p.properties?.Valor?.number||0;
 const cat=p=>p.properties?.Categoria?.select?.name||"";
 const dta=p=>p.properties?.Data?.date?.start||p.created_time||"";
-async function patch(id,props){const r=await fetch(`https://api.notion.com/v1/pages/${id}`,{method:"PATCH",headers:H,body:JSON.stringify({properties:props})});return r.ok;}
-async function archive(id){const r=await fetch(`https://api.notion.com/v1/pages/${id}`,{method:"PATCH",headers:H,body:JSON.stringify({archived:true})});return r.ok;}
+async function setCat(id,nome,obs){const props={Categoria:{select:{name:nome}}};if(obs)props["Observação"]={rich_text:[{text:{content:obs}}]};const r=await fetch(`https://api.notion.com/v1/pages/${id}`,{method:"PATCH",headers:H,body:JSON.stringify({properties:props})});return r.ok;}
 
 const pages=(await query()).filter(p=>!p.archived);
 let terc={Yago:0,Patricia:0,Fatech:0}, fatura=0, dedup=0;
 
-// PASSO 1: terceiros
+// PASSO 1: terceiros -> categoria "Terceiros" + obs nome (NAO apaga)
 for(const p of pages){
   const s=(txt(p)+" "+lug(p)).toLowerCase();
   let nome=null;
-  if(/\byago\b/.test(s)) nome="Yago";
-  else if(/patr[ií]cia|\[patr/.test(s)) nome="Patricia";
-  else if(/fatech/.test(s)) nome="Fatech";
-  if(nome && cat(p)!=="Terceiros"){
-    if(await patch(p.id,{Categoria:{select:{name:"Terceiros"}},Observação:{rich_text:[{text:{content:"Terceiro: "+nome}}]}})){terc[nome]++;}
-    await sleep(120); p._terc=true;
-  }
+  if(/\byago\b/.test(s)) nome="Yago"; else if(/patr[ií]cia|\[patr/.test(s)) nome="Patricia"; else if(/fatech/.test(s)) nome="Fatech";
+  if(nome && cat(p)!=="Terceiros"){ if(await setCat(p.id,"Terceiros","Terceiro: "+nome)){terc[nome]++;} await sleep(120); p._done="terc"; }
 }
-// PASSO 2: itens de fatura que estao na base de gastos (ja estao na base Itens de Fatura) -> arquiva
+// PASSO 2: itens de fatura ja presentes na base Itens de Fatura -> categoria "Item Fatura" (NAO apaga; so nao conta)
 for(const p of pages){
-  if(p._terc) continue;
-  const s=txt(p).toLowerCase();
-  if(/- fatura|- fat\.|fatura ita|fatura nubank|fat\.mc|fat\.visa/.test(s)){
-    if(await archive(p.id)){fatura++; p._arch=true;} await sleep(120);
-  }
+  if(p._done) continue;
+  if(/- fatura|- fat\.|fatura ita|fatura nubank|fat\.mc|fat\.visa/i.test(txt(p))){ if(await setCat(p.id,"Item Fatura","Ja consta na aba de faturas do cartao")){fatura++;} await sleep(120); p._done="fat"; }
 }
-// PASSO 3: dedup fixos (mesmo valor no mesmo mes; um do extrato e um manual -> arquiva o manual)
-const vivos=pages.filter(p=>!p._arch);
+// PASSO 3: dedup fixos (mesmo valor no mes; um do extrato e um manual -> marca o manual como "Duplicado")
 const grupos={};
-for(const p of vivos){
-  if(p._terc) continue;
-  const k=(dta(p).slice(0,7))+"|"+val(p).toFixed(2);
-  (grupos[k]=grupos[k]||[]).push(p);
-}
+for(const p of pages){ if(p._done) continue; const k=(dta(p).slice(0,7))+"|"+val(p).toFixed(2); (grupos[k]=grupos[k]||[]).push(p); }
 for(const k in grupos){
-  const g=grupos[k]; if(g.length<2) continue; if(val(g[0])<150) continue;
-  const ext=g.find(p=>/ext\.|extrato/i.test(txt(p)));
-  const man=g.find(p=>!/ext\.|extrato/i.test(txt(p)));
-  if(ext&&man&&ext!==man){ if(await archive(man.id)){dedup++;} await sleep(120); }
+  const g=grupos[k]; if(g.length<2||val(g[0])<150) continue;
+  const ext=g.find(p=>/ext\.|extrato/i.test(txt(p))); const man=g.find(p=>!/ext\.|extrato/i.test(txt(p)));
+  if(ext&&man&&ext!==man){ if(await setCat(man.id,"Duplicado","Repetido: ja consta pelo extrato")){dedup++;} await sleep(120); }
 }
-console.log("TERCEIROS:",JSON.stringify(terc),"| itens_fatura_arquivados:",fatura,"| duplicatas_arquivadas:",dedup);
+console.log("TERCEIROS:",JSON.stringify(terc),"| itens_fatura_marcados:",fatura,"| duplicatas_marcadas:",dedup);
