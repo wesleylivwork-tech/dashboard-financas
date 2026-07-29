@@ -103,9 +103,12 @@ async function coletar() {
   });
   Object.values(lancPorCat).forEach(a=>a.sort((x,y)=>y.val-x.val));
 
-  // ultimos lancamentos (mais recentes primeiro)
-  const ultimos = gastosMes.map(p=>({desc: txt(p,"Descrição")||"?", val: num(p,"Valor")||0, quem: sel(p,"Quem pagou"), data: dataGasto(p), _c: p.created_time||""}))
-    .sort((a,b)=> (b.data+b._c).localeCompare(a.data+a._c)).slice(0,8);
+  // lancamentos recentes (todos, mais novos primeiro) -> 3 na home, 3 dias na subpagina
+  const d3 = new Date(Date.now()-3*864e5).toISOString().slice(0,10);
+  const recentes = gastos.map(p=>({desc: txt(p,"Descrição")||"?", val: num(p,"Valor")||0, quem: sel(p,"Quem pagou"), cat: sel(p,"Categoria")||"Outros", data: dataGasto(p), _c: p.created_time||""}))
+    .sort((a,b)=> (b.data+b._c).localeCompare(a.data+a._c));
+  const ultimos = recentes.slice(0,3);
+  const ultimos3d = recentes.filter(x => x.data >= d3);
 
   // aportes = gastos categoria Aporte/Investimento (entrada na conta invest)
   const aportes = gastos.filter(p => /aporte|investiment/i.test(sel(p,"Categoria")))
@@ -118,7 +121,7 @@ async function coletar() {
     contasCC: contasCC.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), saldo:num(p,"Saldo atual"), situ:sel(p,"Situação"), obs:txt(p,"Observação")})),
     dividas: dividas.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), saldo:num(p,"Saldo atual"), obs:txt(p,"Observação")})),
     cartoes: cartoes.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), venc:txt(p,"Vencimento"), fatura:num(p,"Fatura atual"), limite:num(p,"Limite")})),
-    totalContas, totalFaturas, totalDividas, top5, ultimos, lancPorCat, aportes,
+    totalContas, totalFaturas, totalDividas, top5, ultimos, ultimos3d, lancPorCat, aportes,
     saldoWes, saldoIara,
     totalGasto: saidas,
   };
@@ -232,6 +235,32 @@ function pgDivida(d) {
     </div>
     <div class="lbl">Plano de quitação · do menor pro maior</div>
     <div>${passosHTML}</div>`;
+}
+function pgLancamentos(d) {
+  const lista = d.ultimos3d || [];
+  if (!lista.length) return `<div style="font-size:14px;color:#6b7a99;padding:20px 0;text-align:center;">sem lançamentos nos últimos 3 dias</div>`;
+  const totalPer = lista.reduce((s,x)=>s+(x.val||0),0);
+  // agrupa por dia
+  const dias = {};
+  lista.forEach(x => { (dias[x.data] = dias[x.data]||[]).push(x); });
+  const ordem = Object.keys(dias).sort((a,b)=>b.localeCompare(a));
+  const corpo = ordem.map(dia=>{
+    const itens = dias[dia];
+    const totDia = itens.reduce((s,x)=>s+(x.val||0),0);
+    const linhas = itens.map(x=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+      <span style="font-size:14.5px;color:#dbe3f0;">${esc(x.desc)}<br><span style="font-size:11.5px;color:#5a6785;">${esc(x.cat)}${x.quem?` · ${esc(x.quem)}`:""}</span></span>
+      <span style="font-size:14.5px;font-weight:700;color:#eaf0fa;white-space:nowrap;">${fmt(x.val)}</span></div>`).join("");
+    return `<div style="margin-bottom:18px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="font-size:12px;color:#7d8aa5;text-transform:uppercase;letter-spacing:.8px;font-weight:600;">${dataBR(dia)}</span>
+        <span style="font-size:12px;color:#6b7a99;">${fmt(totDia)}</span></div>
+      ${linhas}</div>`;
+  }).join("");
+  return `<div style="text-align:center;margin:8px 0 20px;">
+      <div style="font-size:13px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;">Últimos 3 dias</div>
+      <div style="font-size:36px;font-weight:800;color:#eaf0fa;letter-spacing:-1px;margin-top:4px;">${fmtFull(totalPer)}</div>
+      <div style="font-size:13px;color:#6b7a99;margin-top:4px;">${lista.length} lançamento${lista.length!=1?'s':''}</div>
+    </div>${corpo}`;
 }
 
 // ===== HTML principal =====
@@ -351,7 +380,8 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
   <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:18px;padding:18px 16px;margin-bottom:18px;">${roscaGrande(d.top5, d.totalGasto)}</div>
 
   <div class="lbl">Últimos lançamentos</div>
-  <div style="margin-bottom:18px;">${ultimosHTML}</div>
+  <div class="click" onclick="abre('lancamentos')" style="margin-bottom:18px;">${ultimosHTML}
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:5px;color:#5a6785;font-size:12px;margin-top:8px;">ver todos <span class="chev">›</span></div></div>
 
   <div style="display:flex;align-items:center;gap:11px;background:${f.cor}14;border:1px solid ${f.cor}38;border-radius:12px;padding:13px 15px;">
     <span style="width:10px;height:10px;border-radius:50%;background:${f.cor};flex-shrink:0;box-shadow:0 0 8px ${f.cor};"></span>
@@ -364,6 +394,7 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
 <div id="contas" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Contas correntes</div>${pgContas(d)}</div>
 <div id="cartoes" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Cartões</div>${pgCartoes(d)}</div>
 <div id="divida" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Dívida & quitação</div>${pgDivida(d)}</div>
+<div id="lancamentos" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Lançamentos</div>${pgLancamentos(d)}</div>
 <div id="categoria" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;" id="catTit">Categoria</div><div id="catBody"></div></div>
 
 </div>
@@ -372,7 +403,7 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
 
 <script>
 var CATS = ${catJSON};
-var pags = ["home","invest","contas","cartoes","divida","categoria"];
+var pags = ["home","invest","contas","cartoes","divida","categoria","lancamentos"];
 function show(id){ pags.forEach(function(p){ document.getElementById(p).classList.add("hidden"); }); var e=document.getElementById(id); e.classList.remove("hidden"); e.style.animation="none"; e.offsetHeight; e.style.animation=""; window.scrollTo(0,0); }
 function abre(id){ show(id); }
 function volta(){ show("home"); }
