@@ -72,12 +72,15 @@ async function coletar() {
   const saidas = gastosMes.reduce((s,p)=> s + (num(p,"Valor")||0), 0);
   const sobra = renda - saidas;
 
-  // conta investimentos separada
+  // conta investimentos separada; dividas parceladas separadas das contas
   const contaInvest = contas.find(p => txt(p,"Nome").toLowerCase().includes("investiment"));
-  const contasCC = contas.filter(p => sel(p,"Tipo")==="Conta corrente" && !txt(p,"Nome").toLowerCase().includes("investiment"));
+  const ehDivida = p => /d[ií]vida|parcelad|empr[eé]st|financiament|fidc/i.test(txt(p,"Nome")+" "+sel(p,"Banco"));
+  const contasCC = contas.filter(p => sel(p,"Tipo")==="Conta corrente" && !txt(p,"Nome").toLowerCase().includes("investiment") && !ehDivida(p));
+  const dividas = contas.filter(p => sel(p,"Tipo")==="Conta corrente" && ehDivida(p));
   const cartoes = contas.filter(p => sel(p,"Tipo")==="Cartão de crédito");
   const totalContas = contasCC.reduce((s,p)=> s + (num(p,"Saldo atual")||0), 0);
   const totalFaturas = cartoes.reduce((s,p)=> s + (num(p,"Fatura atual")||0), 0);
+  const totalDividas = dividas.reduce((s,p)=> s + (num(p,"Saldo atual")||0), 0);
 
   // saldo por titular (conta principal de cada um) pro destaque do topo
   const saldoPorTitular = (t) => contasCC.filter(p=>sel(p,"Titular")===t).reduce((s,p)=> s + (num(p,"Saldo atual")||0), 0);
@@ -100,9 +103,9 @@ async function coletar() {
   });
   Object.values(lancPorCat).forEach(a=>a.sort((x,y)=>y.val-x.val));
 
-  // top 3 gastos individuais
-  const top3 = gastosMes.map(p=>({desc: txt(p,"Descrição")||"?", val: num(p,"Valor")||0}))
-    .sort((a,b)=>b.val-a.val).slice(0,3);
+  // ultimos lancamentos (mais recentes primeiro)
+  const ultimos = gastosMes.map(p=>({desc: txt(p,"Descrição")||"?", val: num(p,"Valor")||0, quem: sel(p,"Quem pagou"), data: dataGasto(p), _c: p.created_time||""}))
+    .sort((a,b)=> (b.data+b._c).localeCompare(a.data+a._c)).slice(0,8);
 
   // aportes = gastos categoria Aporte/Investimento (entrada na conta invest)
   const aportes = gastos.filter(p => /aporte|investiment/i.test(sel(p,"Categoria")))
@@ -113,8 +116,9 @@ async function coletar() {
     anoMes, renda, saidas, sobra, investido, meta,
     contaInvest: contaInvest ? { nome:txt(contaInvest,"Nome"), saldo:num(contaInvest,"Saldo atual")||0 } : null,
     contasCC: contasCC.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), saldo:num(p,"Saldo atual"), situ:sel(p,"Situação"), obs:txt(p,"Observação")})),
+    dividas: dividas.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), saldo:num(p,"Saldo atual"), obs:txt(p,"Observação")})),
     cartoes: cartoes.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), venc:txt(p,"Vencimento"), fatura:num(p,"Fatura atual"), limite:num(p,"Limite")})),
-    totalContas, totalFaturas, top5, top3, lancPorCat, aportes,
+    totalContas, totalFaturas, totalDividas, top5, ultimos, lancPorCat, aportes,
     saldoWes, saldoIara,
     totalGasto: saidas,
   };
@@ -208,10 +212,13 @@ function pgCartoes(d) {
 }
 function pgDivida(d) {
   const negativas = d.contasCC.filter(c=>(c.saldo||0)<0);
+  const parcelas = (d.dividas||[]).filter(c=>(c.saldo||0)<0);
   const dividaContas = Math.abs(negativas.reduce((s,c)=>s+(c.saldo||0),0));
-  const dividaTotal = dividaContas + d.totalFaturas;
+  const dividaParcelas = Math.abs(parcelas.reduce((s,c)=>s+(c.saldo||0),0));
+  const dividaTotal = dividaContas + dividaParcelas + d.totalFaturas;
   const passos = [
     ...negativas.map(c=>({nome:`Zerar ${c.nome}`, val:Math.abs(c.saldo||0)})),
+    ...parcelas.map(c=>({nome:c.nome, val:Math.abs(c.saldo||0)})),
     ...d.cartoes.filter(c=>(c.fatura||0)>0).map(c=>({nome:`Fatura ${c.nome}`, val:c.fatura})),
   ].sort((a,b)=>a.val-b.val);
   const passosHTML = passos.length ? passos.map((p,i)=>`<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.05);">
@@ -221,7 +228,7 @@ function pgDivida(d) {
   return `<div style="text-align:center;margin:8px 0 22px;">
       <div style="font-size:13px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;">Dívida total</div>
       <div style="font-size:44px;font-weight:800;color:${dividaTotal>0?'#f87171':'#34d399'};letter-spacing:-1.5px;margin-top:4px;">${fmtFull(dividaTotal)}</div>
-      <div style="font-size:13px;color:#6b7a99;margin-top:6px;">contas ${fmtFull(dividaContas)} · faturas ${fmtFull(d.totalFaturas)}</div>
+      <div style="font-size:13px;color:#6b7a99;margin-top:6px;">contas ${fmtFull(dividaContas)} · faturas ${fmtFull(d.totalFaturas)}${dividaParcelas>0?` · parcelas ${fmtFull(dividaParcelas)}`:""}</div>
     </div>
     <div class="lbl">Plano de quitação · do menor pro maior</div>
     <div>${passosHTML}</div>`;
@@ -232,7 +239,7 @@ function html(d) {
   const f = foco(d);
   const pctMeta = d.meta>0 ? Math.min(100, Math.round(d.investido/d.meta*100)) : 0;
   const dash = 264, offset = dash - (dash*pctMeta/100);
-  const posGeral = d.totalContas - d.totalFaturas;
+  const posGeral = d.totalContas + (d.totalDividas||0) - d.totalFaturas;
   const hoje = new Date();
   const diaSem = hoje.toLocaleDateString("pt-BR",{weekday:"long"});
   const dataLonga = hoje.toLocaleDateString("pt-BR",{day:"2-digit",month:"long"});
@@ -248,7 +255,9 @@ function html(d) {
 
   const cartoesHTML = d.cartoes.length ? d.cartoes.map((c,i)=>`<div style="display:flex;justify-content:space-between;padding:11px 0;${i<d.cartoes.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#aab6cc;">${esc(c.nome)}${c.venc?` · ${esc(c.venc)}`:""}</span><span style="font-size:13.5px;font-weight:600;color:#eaf0fa;">${c.fatura!=null?fmt(c.fatura):"-"}</span></div>`).join("") : `<div style="font-size:13px;color:#6b7a99;padding:10px 0;">nenhum cartão com fatura ainda</div>`;
 
-  const top3HTML = d.top3.length ? d.top3.map((g,i)=>`<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13.5px;"><span style="color:#aab6cc;">${i+1}. ${esc(g.desc)}</span><span style="font-weight:600;color:#eaf0fa;">${fmt(g.val)}</span></div>`).join("") : `<div style="font-size:13px;color:#6b7a99;padding:10px 0;">sem gastos no mês</div>`;
+  const ultimosHTML = d.ultimos.length ? d.ultimos.map((g,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;${i<d.ultimos.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#dbe3f0;">${esc(g.desc)}${g.quem?` <span style="color:#5a6785;font-size:11.5px;">${esc(g.quem)}${g.data?` · ${dataBR(g.data)}`:""}</span>`:""}</span><span style="font-size:13.5px;font-weight:700;color:#eaf0fa;white-space:nowrap;">${fmt(g.val)}</span></div>`).join("") : `<div style="font-size:13px;color:#6b7a99;padding:10px 0;">sem gastos no mês</div>`;
+
+  const dividasHTML = (d.dividas&&d.dividas.length) ? d.dividas.map((c,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;${i<d.dividas.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#dbe3f0;">${esc(c.nome)}${c.banco?` · ${esc(c.banco)}`:""}</span><span style="font-size:13.5px;font-weight:700;color:#f87171;white-space:nowrap;">${fmt(c.saldo)}</span></div>`).join("") : "";
 
   // dados de categoria pro JS (pagina interna)
   const catJSON = JSON.stringify(Object.fromEntries(Object.entries(d.lancPorCat).map(([k,v])=>[k,v])));
@@ -335,11 +344,14 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
   <div class="click" onclick="abre('cartoes')" style="margin-bottom:18px;">${cartoesHTML}
     <div style="display:flex;justify-content:flex-end;align-items:center;gap:5px;color:#5a6785;font-size:12px;margin-top:8px;">ver detalhes <span class="chev">›</span></div></div>
 
+  ${dividasHTML ? `<div class="lbl">Dívidas · empréstimos</div>
+  <div style="background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.12);border-radius:14px;padding:6px 14px;margin-bottom:18px;">${dividasHTML}</div>` : ""}
+
   <div class="lbl">Gastos do mês por categoria</div>
   <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:18px;padding:18px 16px;margin-bottom:18px;">${roscaGrande(d.top5, d.totalGasto)}</div>
 
-  <div class="lbl">Top 3 gastos do mês</div>
-  <div style="margin-bottom:18px;">${top3HTML}</div>
+  <div class="lbl">Últimos lançamentos</div>
+  <div style="margin-bottom:18px;">${ultimosHTML}</div>
 
   <div style="display:flex;align-items:center;gap:11px;background:${f.cor}14;border:1px solid ${f.cor}38;border-radius:12px;padding:13px 15px;">
     <span style="width:10px;height:10px;border-radius:50%;background:${f.cor};flex-shrink:0;box-shadow:0 0 8px ${f.cor};"></span>
