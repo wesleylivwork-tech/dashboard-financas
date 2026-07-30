@@ -20,6 +20,59 @@ const DB_ITENS  = "be48663d7ede42349651f25b26a944f2";
 
 const DRY = process.argv.includes("--dry");
 
+// ===== CONFIG ORCAMENTO (WI Finance v2) =====
+// Renda de referencia = media real do casal (nao a do mes pontual). Limite do teto.
+const RENDA_REF = 18000;
+
+// mapa: categoria antiga (micro) -> macro. Fallback quando o gasto nao tem campo Macro.
+const CAT2MACRO = {
+  "Mercado":"Alimentacao","Padaria":"Alimentacao","Restaurante/Lanche":"Alimentacao","Conveniência":"Alimentacao","Conveniencia":"Alimentacao",
+  "Combustível":"Carro","Combustivel":"Carro","Transporte/Pedágio":"Carro","Carro":"Carro",
+  "Casa/Moradia":"Moradia","Assinaturas":"Moradia",
+  "Saúde/Farmácia":"Saude","Saude/Farmacia":"Saude",
+  "Educação":"Pessoal","Compras":"Pessoal","Estética":"Pessoal","Estetica":"Pessoal",
+  "Lazer":"Lazer","Pet":"Pet","Outros":"Outros",
+  "Dívida":"Divida","Divida":"Divida","Taxas":"Taxas","Transferência":"Transferencia","Transferencia":"Transferencia","Terceiros":"Terceiros","Item Fatura":"ItemFatura","Duplicado":"Duplicado","Investimento":"Investimento","Aporte":"Investimento",
+};
+// classe padrao por categoria (Essencial/Luxo). fluxo fica sem classe.
+const CAT2CLASSE = {
+  "Mercado":"Essencial","Padaria":"Luxo","Restaurante/Lanche":"Luxo","Conveniência":"Luxo","Conveniencia":"Luxo",
+  "Combustível":"Essencial","Combustivel":"Essencial","Transporte/Pedágio":"Essencial","Carro":"Essencial",
+  "Casa/Moradia":"Essencial","Assinaturas":"Luxo",
+  "Saúde/Farmácia":"Essencial","Saude/Farmacia":"Essencial",
+  "Educação":"Essencial","Compras":"Luxo","Estética":"Luxo","Estetica":"Luxo",
+  "Lazer":"Luxo","Pet":"Essencial","Outros":"Essencial",
+};
+// overrides por regex na descricao (macro / classe / micro / flags). Aplicados apos o mapa.
+// {re, macro?, classe?, micro?, divida?, ignora?}
+const OVERRIDES = [
+  { re:/claude\s*max|claude/i, macro:"Trabalho", classe:null, ignora:false, micro:"Ferramenta trabalho" },
+  { re:/cons[óo]rcio|embracon/i, macro:"Carro", classe:"Essencial", micro:"Consórcio", divida:true },
+  { re:/vitor|lavagem/i, macro:"Carro", classe:"Luxo", micro:"Lavagem" },
+  { re:/personal|t[êe]nis|jorge|tuba|open tenis|clube/i, macro:"Pessoal", classe:"Luxo", micro:"Esporte" },
+  { re:/cabeleireiro|sal[ãa]o|vagner|unha|sobrancelha/i, macro:"Pessoal", classe:"Luxo", micro:"Estética" },
+  { re:/viagem|seattle/i, macro:"Viagem", classe:"Luxo", micro:"Viagem" },
+  { re:/apple|icloud|ifood|polo play/i, macro:"Pessoal", classe:"Luxo", micro:"Assinatura pessoal" },
+  { re:/lavagem sof[áa]|conserto|ferro de passar|aliexpress|ralador|casad/i, macro:"Casa", classe:"Essencial", micro:"Casa reparos & itens" },
+  { re:/fatech|correios|pix empresa|pix gabriel|f[áa]bio rog/i, ignora:true },
+];
+function classifica(cat, desc){
+  let macro = CAT2MACRO[cat] || "Outros";
+  let classe = CAT2CLASSE[cat] || null;
+  let micro = cat || "Outros";
+  let divida = false, ignora = false;
+  for (const o of OVERRIDES){ if (o.re.test(desc||"")){ if(o.macro)macro=o.macro; if(o.classe!==undefined&&o.classe!==null)classe=o.classe; if(o.micro)micro=o.micro; if(o.divida)divida=true; if(o.ignora)ignora=true; break; } }
+  return { macro, classe, micro, divida, ignora };
+}
+// tetos por macro (limite mensal). soma ~21.372. renda-ref 18k -> app mostra estouro.
+const TETOS = {
+  Moradia:4528, Casa:500, Alimentacao:3000, Carro:6244, Saude:1450,
+  Pessoal:3550, Lazer:400, Viagem:1000, Pet:500, Outros:200,
+};
+// macros que sao consumo (entram em essencial/luxo e barrinhas)
+const MACROS_CONSUMO = ["Moradia","Casa","Alimentacao","Carro","Saude","Pessoal","Lazer","Viagem","Pet","Outros"];
+const MACRO_ICON = { Moradia:"🏠", Casa:"🔧", Alimentacao:"🍽️", Carro:"🚗", Saude:"❤️", Pessoal:"👤", Lazer:"🎉", Viagem:"✈️", Pet:"🐾", Outros:"📦" };
+
 // ===== helpers Notion =====
 async function query(db, body={}) {
   let results = [], cursor = undefined;
@@ -74,7 +127,13 @@ async function coletar() {
   const dataGasto = p => (dateStart(p,"Data") || p.created_time || "").slice(0,10);
   // categorias que NAO sao consumo do casal (nao entram no "Saiu no mes" nem na rosca)
   const NAO_CONSUMO = ["Transferência","Transferencia","Dívida","Divida","Taxas","Terceiros","Item Fatura","Duplicado"];
-  const ehConsumo = p => !NAO_CONSUMO.includes(sel(p,"Categoria"));
+  // classifica um gasto em macro/classe/micro: usa campo Macro se preenchido, senao deriva da Categoria+Descricao
+  const macroDe = p => {
+    const m = sel(p,"Macro");
+    if (m) return { macro:m, classe:sel(p,"Classe")||CAT2CLASSE[sel(p,"Categoria")]||null, micro:sel(p,"Categoria")||m, divida:false, ignora:false };
+    return classifica(sel(p,"Categoria"), txt(p,"Descrição"));
+  };
+  const ehConsumo = p => { const c=macroDe(p); return MACROS_CONSUMO.includes(c.macro) && !c.ignora; };
   // terceiros (gasto de outra pessoa no cartao do casal) agrupado por nome
   // fontes: base de Gastos (categoria Terceiros) + base Itens de Fatura (campo Terceiro)
   const terceirosMap = {};
@@ -120,6 +179,24 @@ async function coletar() {
   const top5 = catsFull.slice(0,5).map(c=>({...c}));
   const outrosVal = catsFull.slice(5).reduce((s,c)=>s+c.val,0);
   if (outrosVal>0) top5.push({nome:"Outros+", val:outrosVal});
+
+  // ===== v2: agrupamento por MACRO + essencial/luxo + tetos + comparativo =====
+  const macroMap = {}; let essencialTot=0, luxoTot=0; const lancPorMacro={};
+  gastosMes.forEach(p => {
+    const c = macroDe(p); const v = num(p,"Valor")||0;
+    macroMap[c.macro] = (macroMap[c.macro]||0) + v;
+    if (c.classe==="Essencial") essencialTot+=v; else if (c.classe==="Luxo") luxoTot+=v;
+    (lancPorMacro[c.macro]=lancPorMacro[c.macro]||[]).push({desc:txt(p,"Descrição")||"?", val:v, data:dataGasto(p), micro:c.micro, classe:c.classe||"-"});
+  });
+  Object.values(lancPorMacro).forEach(a=>a.sort((x,y)=>y.val-x.val));
+  const macros = MACROS_CONSUMO.map(m=>({macro:m, icon:MACRO_ICON[m]||"", uso:macroMap[m]||0, teto:TETOS[m]||0}))
+    .filter(x=>x.uso>0 || x.teto>0).sort((a,b)=>b.uso-a.uso);
+  const tetoTotal = Object.values(TETOS).reduce((s,v)=>s+v,0);
+  // comparativo mes anterior
+  const [ay,am] = anoMes.split("-").map(Number);
+  const prev = new Date(ay, am-2, 1);
+  const anoMesAnt = `${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,"0")}`;
+  const saidasAnt = gastos.filter(p=>dataGasto(p).slice(0,7)===anoMesAnt && ehConsumo(p)).reduce((s,p)=>s+(num(p,"Valor")||0),0);
 
   // lancamentos detalhados por categoria (pra pagina interna)
   const lancPorCat = {};
@@ -170,6 +247,7 @@ async function coletar() {
     totalContas, totalFaturas, totalDividas, top5, ultimos, ultimos3d, lancPorCat, aportes,
     saldoWes, saldoIara, terceiros, fixoMes, varMes,
     totalGasto: saidas,
+    macros, tetoTotal, essencialTot, luxoTot, rendaRef: RENDA_REF, saidasAnt, anoMesAnt, lancPorMacro,
   };
 }
 
@@ -309,6 +387,63 @@ function pgLancamentos(d) {
     </div>${corpo}`;
 }
 
+// ===== v2 componentes (essencial/luxo, barras por macro, comparativo) =====
+function blocoEssLuxo(d){
+  const ess=d.essencialTot||0, lux=d.luxoTot||0, tot=ess+lux||1;
+  const pe=Math.round(ess/tot*100), pl=100-pe;
+  return `<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:16px;padding:16px;margin-bottom:12px;">
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+      <div><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Essencial</div><div style="font-size:21px;font-weight:800;color:#34d399;">${fmt(ess)}</div></div>
+      <div style="text-align:right;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Luxo</div><div style="font-size:21px;font-weight:800;color:#f0abfc;">${fmt(lux)}</div></div>
+    </div>
+    <div style="display:flex;height:10px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.05);">
+      <div style="width:${pe}%;background:#34d399;"></div><div style="width:${pl}%;background:#f0abfc;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:#7d8aa5;"><span>${pe}% essencial</span><span>${pl}% luxo</span></div>
+  </div>`;
+}
+function barrasMacro(d){
+  return (d.macros||[]).map(m=>{
+    const pct = m.teto>0? Math.round(m.uso/m.teto*100) : 0;
+    const estouro = m.uso>m.teto && m.teto>0;
+    const cor = estouro? "#f87171" : pct>85? "#facc15" : "linear-gradient(90deg,#38bdf8,#22d3ee)";
+    return `<div data-macro="${esc(m.macro)}" onclick="abreMacro(this.dataset.macro)" style="padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:13.5px;color:#dbe3f0;">${m.icon} ${esc(m.macro)}</span>
+        <span style="font-size:12.5px;color:${estouro?'#f87171':'#aab6cc'};">${fmt(m.uso)} <span style="color:#5a6785;">/ ${fmt(m.teto)}</span> <span class="chev">›</span></span>
+      </div>
+      <div style="height:7px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:${Math.min(100,pct)}%;background:${cor};border-radius:99px;"></div></div>
+    </div>`;
+  }).join("");
+}
+function blocoComparativo(d){
+  const at=d.saidas||0, ant=d.saidasAnt||0;
+  const dif=at-ant; const temAnt=ant>0;
+  const seta = dif>0?"▲":dif<0?"▼":"—"; const cor=dif>0?"#f87171":"#34d399";
+  return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;">
+      <div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Renda referência</div>
+      <div style="font-size:18px;font-weight:800;margin-top:3px;color:#eaf0fa;">${fmt(d.rendaRef)}</div>
+      <div style="font-size:10.5px;color:#6b7a99;margin-top:2px;">média do casal</div>
+    </div>
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;">
+      <div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">vs mês passado</div>
+      <div style="font-size:18px;font-weight:800;margin-top:3px;color:${temAnt?cor:'#6b7a99'};">${temAnt?seta+" "+fmt(Math.abs(dif)):"—"}</div>
+      <div style="font-size:10.5px;color:#6b7a99;margin-top:2px;">${temAnt?"passado "+fmt(ant):"sem base ainda"}</div>
+    </div>
+  </div>`;
+}
+function avisoTeto(d){
+  const teto=d.tetoTotal||0, ref=d.rendaRef||0;
+  if (teto<=ref) return "";
+  const excesso=teto-ref;
+  return `<div style="display:flex;align-items:center;gap:11px;background:rgba(248,113,113,.09);border:1px solid rgba(248,113,113,.28);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+    <span style="font-size:18px;">⚠️</span>
+    <span style="font-size:12.5px;color:#f4c7c7;line-height:1.45;">Os tetos somam <b>${fmt(teto)}</b>, ${fmt(excesso)} acima da renda média (${fmt(ref)}). O essencial cabe; o alvo é cortar luxo pra fechar a conta.</span>
+  </div>`;
+}
+function pgMacro(d){ return ""; } // renderizado via JS (abreMacro)
+
 // ===== HTML principal =====
 function html(d) {
   const f = foco(d);
@@ -369,6 +504,7 @@ function html(d) {
   const catJSON = JSON.stringify(Object.fromEntries(Object.entries(d.lancPorCat).map(([k,v])=>[k,v])));
   // dados de cartao pro JS (historico da fatura)
   const cardJSON = JSON.stringify(Object.fromEntries(d.cartoes.map(c=>[c.nome, {fatura:c.fatura, venc:c.venc, limite:c.limite, itens:(c.itens||[]).map(x=>({desc:x.desc, val:x.val, data:x.data, terc:x.terceiro||""}))}])));
+  const macroJSON = JSON.stringify(Object.fromEntries((d.macros||[]).map(m=>[m.macro, {uso:m.uso, teto:m.teto, itens:(d.lancPorMacro[m.macro]||[])}])));
 
   return `<!DOCTYPE html>
 <html lang="pt-BR"><head>
@@ -448,6 +584,15 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
     <div style="background:rgba(255,255,255,.02);border-radius:12px;padding:11px;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Variável</div><div style="font-size:16px;font-weight:700;margin-top:2px;color:#5eead4;">${fmt(d.varMes||0)}</div></div>
   </div>
 
+  <div class="lbl">Orçamento do mês</div>
+  ${avisoTeto(d)}
+  ${blocoComparativo(d)}
+  ${blocoEssLuxo(d)}
+  <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:16px;padding:6px 16px;margin-bottom:20px;">
+    <div style="font-size:10px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;font-weight:600;padding:12px 0 2px;">Tetos por área · uso vs limite</div>
+    ${barrasMacro(d)}
+  </div>
+
   <div class="lbl">Contas correntes</div>
   <div class="click" onclick="abre('contas')" style="margin-bottom:18px;">${contasHTML}
     <div style="display:flex;justify-content:flex-end;align-items:center;gap:5px;color:#5a6785;font-size:12px;margin-top:8px;">ver detalhes <span class="chev">›</span></div></div>
@@ -487,6 +632,7 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
 <div id="terceiros" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;">Terceiros · a cobrar</div>${tercFullHTML}</div>
 <div id="categoria" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;" id="catTit">Categoria</div><div id="catBody"></div></div>
 <div id="cartaodet" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;" id="cardTit">Cartão</div><div id="cardBody"></div></div>
+<div id="macrodet" class="pg hidden"><div class="back" onclick="volta()">‹ Voltar</div><div class="lbl" style="margin-bottom:2px;" id="macroTit">Área</div><div id="macroBody"></div></div>
 
 </div>
 <div style="text-align:center;font-size:11px;color:#3a4560;margin-top:16px;letter-spacing:2px;">WI FINANCE · PAINEL DO CASAL</div>
@@ -495,7 +641,8 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
 <script>
 var CATS = ${catJSON};
 var CARDS = ${cardJSON};
-var pags = ["home","invest","contas","cartoes","divida","categoria","lancamentos","cartaodet","dividas","terceiros"];
+var MACROS = ${macroJSON};
+var pags = ["home","invest","contas","cartoes","divida","categoria","lancamentos","cartaodet","dividas","terceiros","macrodet"];
 function show(id){ pags.forEach(function(p){ document.getElementById(p).classList.add("hidden"); }); var e=document.getElementById(id); e.classList.remove("hidden"); e.style.animation="none"; e.offsetHeight; e.style.animation=""; window.scrollTo(0,0); }
 function abre(id){ show(id); }
 function volta(){ show("home"); }
@@ -508,6 +655,19 @@ function abreCat(nome){
   var body = l.length? l.map(function(x){ return '<div style="display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:15px;color:#dbe3f0;">'+x.desc+(x.data?' <span style=\\'color:#5a6785;font-size:13px;\\'>'+(x.data?x.data.slice(8,10)+"/"+x.data.slice(5,7):"")+'</span>':'')+'</span><span style="font-size:15px;font-weight:700;color:#eaf0fa;">'+fnum(x.val)+'</span></div>'; }).join("") : '<div style="font-size:14px;color:#6b7a99;padding:14px 0;">sem lançamentos</div>';
   document.getElementById("catBody").innerHTML = head + body;
   show("categoria");
+}
+function abreMacro(nome){
+  var m = MACROS[nome]||{itens:[],uso:0,teto:0};
+  var itens = m.itens||[];
+  var estouro = m.uso>m.teto && m.teto>0;
+  document.getElementById("macroTit").textContent = nome;
+  var pct = m.teto>0? Math.round(m.uso/m.teto*100):0;
+  var head = '<div style="text-align:center;margin:8px 0 16px;"><div style="font-size:13px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;">'+nome+'</div><div style="font-size:38px;font-weight:800;color:'+(estouro?"#f87171":"#eaf0fa")+';letter-spacing:-1px;margin-top:4px;">'+fnum(m.uso)+'</div><div style="font-size:13px;color:#6b7a99;margin-top:4px;">teto '+fnum(m.teto)+' · '+pct+'% usado</div></div>';
+  head += '<div style="height:9px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;margin-bottom:18px;"><div style="height:100%;width:'+Math.min(100,pct)+'%;background:'+(estouro?"#f87171":"linear-gradient(90deg,#38bdf8,#22d3ee)")+';border-radius:99px;"></div></div>';
+  var lbl = '<div style="font-size:11px;color:#7d8aa5;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px;font-weight:600;">Lançamentos do mês</div>';
+  var body = itens.length? itens.map(function(x){ var tag=x.classe&&x.classe!="-"?' <span style=\\'font-size:10px;color:'+(x.classe=="Luxo"?"#f0abfc":"#34d399")+';\\'>'+x.classe+'</span>':''; return '<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:14.5px;color:#dbe3f0;">'+x.desc+tag+'<br><span style=\\'font-size:11px;color:#5a6785;\\'>'+(x.micro||"")+(x.data?' · '+(x.data.slice(8,10)+"/"+x.data.slice(5,7)):"")+'</span></span><span style="font-size:14.5px;font-weight:700;color:#eaf0fa;white-space:nowrap;">'+fnum(x.val)+'</span></div>'; }).join("") : '<div style="font-size:14px;color:#6b7a99;padding:14px 0;">sem lançamentos no mês</div>';
+  document.getElementById("macroBody").innerHTML = head + lbl + body;
+  show("macrodet");
 }
 function abreCartao(nome){
   var c = CARDS[nome]||{itens:[]};
