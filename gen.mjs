@@ -418,8 +418,11 @@ function barrasMacro(d){
 }
 function blocoComparativo(d){
   const at=d.saidas||0, ant=d.saidasAnt||0;
-  const dif=at-ant; const temAnt=ant>0;
+  // só compara se o mês anterior tiver base de verdade (>=50% do atual). senão mostra só o deste mês.
+  const temBase = ant>0 && ant >= at*0.5;
+  const dif=at-ant;
   const seta = dif>0?"▲":dif<0?"▼":"—"; const cor=dif>0?"#f87171":"#34d399";
+  const sub = temBase ? `<span style="color:${cor};font-weight:700;">${seta} ${fmt(Math.abs(dif))}</span> <span style="color:#6b7a99;">vs mês passado</span>` : `<span style="color:#6b7a99;">começa a comparar quando fechar o próximo mês</span>`;
   return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
     <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;">
       <div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Renda referência</div>
@@ -427,9 +430,9 @@ function blocoComparativo(d){
       <div style="font-size:10.5px;color:#6b7a99;margin-top:2px;">média do casal</div>
     </div>
     <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;">
-      <div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">vs mês passado</div>
-      <div style="font-size:18px;font-weight:800;margin-top:3px;color:${temAnt?cor:'#6b7a99'};">${temAnt?seta+" "+fmt(Math.abs(dif)):"—"}</div>
-      <div style="font-size:10.5px;color:#6b7a99;margin-top:2px;">${temAnt?"passado "+fmt(ant):"sem base ainda"}</div>
+      <div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Gasto este mês</div>
+      <div style="font-size:18px;font-weight:800;margin-top:3px;color:#eaf0fa;">${fmt(at)}</div>
+      <div style="font-size:10.5px;margin-top:2px;">${sub}</div>
     </div>
   </div>`;
 }
