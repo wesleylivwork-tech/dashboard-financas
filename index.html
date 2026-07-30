@@ -30,8 +30,8 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
 <div id="home" class="pg">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
     <div style="display:flex;align-items:center;gap:12px;">
-      <img src="logo.png?v=1785424371117" alt="WI" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(56,189,248,.4);box-shadow:0 0 14px rgba(56,189,248,.25);">
-      <div><div style="font-size:18px;font-weight:800;color:#eaf0fa;letter-spacing:-.2px;">WI Finance</div><div style="font-size:11px;color:#6b7a99;margin-top:1px;text-transform:capitalize;">quinta-feira, 30 de julho · 12:12</div></div>
+      <img src="logo.png?v=1785426732319" alt="WI" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(56,189,248,.4);box-shadow:0 0 14px rgba(56,189,248,.25);">
+      <div><div style="font-size:18px;font-weight:800;color:#eaf0fa;letter-spacing:-.2px;">WI Finance</div><div style="font-size:11px;color:#6b7a99;margin-top:1px;text-transform:capitalize;">quinta-feira, 30 de julho · 12:52</div></div>
     </div>
     <div style="position:relative;width:38px;height:38px;flex-shrink:0;" title="meta de investimento do mes">
       <svg viewBox="0 0 100 100" style="width:100%;height:100%;transform:rotate(-90deg);"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(56,189,248,.12)" stroke-width="11"/><circle cx="50" cy="50" r="42" fill="none" stroke="#38bdf8" stroke-width="11" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"/></svg>
@@ -103,70 +103,6 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
     </div>
     <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:#7d8aa5;"><span>62% essencial</span><span>38% luxo</span></div>
   </div>
-  <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:16px;padding:6px 16px;margin-bottom:20px;">
-    <div style="font-size:10px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;font-weight:600;padding:12px 0 2px;">Tetos por área · uso vs limite</div>
-    <div data-macro="Moradia" onclick="abreMacro(this.dataset.macro)" style="padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:13.5px;color:#dbe3f0;">🏠 Moradia</span>
-        <span style="font-size:12.5px;color:#f87171;">R$ 4,6k <span style="color:#5a6785;">/ R$ 4,5k</span> <span class="chev">›</span></span>
-      </div>
-      <div style="height:7px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:100%;background:#f87171;border-radius:99px;"></div></div>
-    </div><div data-macro="Alimentacao" onclick="abreMacro(this.dataset.macro)" style="padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:13.5px;color:#dbe3f0;">🍽️ Alimentacao</span>
-        <span style="font-size:12.5px;color:#f87171;">R$ 4,4k <span style="color:#5a6785;">/ R$ 3,0k</span> <span class="chev">›</span></span>
-      </div>
-      <div style="height:7px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:100%;background:#f87171;border-radius:99px;"></div></div>
-    </div><div data-macro="Carro" onclick="abreMacro(this.dataset.macro)" style="padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:13.5px;color:#dbe3f0;">🚗 Carro</span>
-        <span style="font-size:12.5px;color:#aab6cc;">R$ 4,1k <span style="color:#5a6785;">/ R$ 6,2k</span> <span class="chev">›</span></span>
-      </div>
-      <div style="height:7px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:65%;background:linear-gradient(90deg,#38bdf8,#22d3ee);border-radius:99px;"></div></div>
-    </div><div data-macro="Pessoal" onclick="abreMacro(this.dataset.macro)" style="padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:13.5px;color:#dbe3f0;">👤 Pessoal</span>
-        <span style="font-size:12.5px;color:#aab6cc;">R$ 3,3k <span style="color:#5a6785;">/ R$ 3,5k</span> <span class="chev">›</span></span>
-      </div>
-      <div style="height:7px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:93%;background:#facc15;border-radius:99px;"></div></div>
-    </div><div data-macro="Casa" onclick="abreMacro(this.dataset.macro)" style="padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:13.5px;color:#dbe3f0;">🔧 Casa</span>
-        <span style="font-size:12.5px;color:#f87171;">R$ 678 <span style="color:#5a6785;">/ R$ 500</span> <span class="chev">›</span></span>
-      </div>
-      <div style="height:7px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:100%;background:#f87171;border-radius:99px;"></div></div>
-    </div><div data-macro="Saude" onclick="abreMacro(this.dataset.macro)" style="padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:13.5px;color:#dbe3f0;">❤️ Saude</span>
-        <span style="font-size:12.5px;color:#aab6cc;">R$ 370 <span style="color:#5a6785;">/ R$ 1,4k</span> <span class="chev">›</span></span>
-      </div>
-      <div style="height:7px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:26%;background:linear-gradient(90deg,#38bdf8,#22d3ee);border-radius:99px;"></div></div>
-    </div><div data-macro="Lazer" onclick="abreMacro(this.dataset.macro)" style="padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:13.5px;color:#dbe3f0;">🎉 Lazer</span>
-        <span style="font-size:12.5px;color:#aab6cc;">R$ 350 <span style="color:#5a6785;">/ R$ 400</span> <span class="chev">›</span></span>
-      </div>
-      <div style="height:7px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:88%;background:#facc15;border-radius:99px;"></div></div>
-    </div><div data-macro="Pet" onclick="abreMacro(this.dataset.macro)" style="padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:13.5px;color:#dbe3f0;">🐾 Pet</span>
-        <span style="font-size:12.5px;color:#aab6cc;">R$ 170 <span style="color:#5a6785;">/ R$ 500</span> <span class="chev">›</span></span>
-      </div>
-      <div style="height:7px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:34%;background:linear-gradient(90deg,#38bdf8,#22d3ee);border-radius:99px;"></div></div>
-    </div><div data-macro="Viagem" onclick="abreMacro(this.dataset.macro)" style="padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:13.5px;color:#dbe3f0;">✈️ Viagem</span>
-        <span style="font-size:12.5px;color:#aab6cc;">R$ 127 <span style="color:#5a6785;">/ R$ 1,0k</span> <span class="chev">›</span></span>
-      </div>
-      <div style="height:7px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:13%;background:linear-gradient(90deg,#38bdf8,#22d3ee);border-radius:99px;"></div></div>
-    </div><div data-macro="Outros" onclick="abreMacro(this.dataset.macro)" style="padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:13.5px;color:#dbe3f0;">📦 Outros</span>
-        <span style="font-size:12.5px;color:#aab6cc;">R$ 0 <span style="color:#5a6785;">/ R$ 200</span> <span class="chev">›</span></span>
-      </div>
-      <div style="height:7px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:0%;background:linear-gradient(90deg,#38bdf8,#22d3ee);border-radius:99px;"></div></div>
-    </div>
-  </div>
 
   <div class="lbl">Contas correntes</div>
   <div class="click" onclick="abre('contas')" style="margin-bottom:18px;"><div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);">
@@ -188,25 +124,67 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
   <div class="click" onclick="abre('terceiros')" style="background:rgba(192,132,252,.05);border:1px solid rgba(192,132,252,.15);border-radius:14px;padding:6px 14px;margin-bottom:18px;"><div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:14px;color:#dbe3f0;">Patricia <span style="color:#5a6785;font-size:11.5px;">11 lanç.</span></span><span style="font-size:14px;font-weight:700;color:#c084fc;white-space:nowrap;">R$ 1,2k</span></div><div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;"><span style="font-size:14px;color:#dbe3f0;">Yago <span style="color:#5a6785;font-size:11.5px;">2 lanç.</span></span><span style="font-size:14px;font-weight:700;color:#c084fc;white-space:nowrap;">R$ 70</span></div>
     <div style="display:flex;justify-content:flex-end;align-items:center;gap:5px;color:#5a6785;font-size:12px;padding:8px 0 4px;">ver detalhes <span class="chev">›</span></div></div>
 
-  <div class="lbl">Gastos do mês por categoria</div>
+  <div class="lbl">Gastos do mês por área · uso vs teto</div>
   <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:18px;padding:18px 16px;margin-bottom:18px;"><div style="display:flex;flex-direction:column;align-items:center;gap:18px;">
     <div style="position:relative;width:158px;height:158px;">
-      <svg viewBox="0 0 42 42" style="width:100%;height:100%;"><circle cx="21" cy="21" r="15.9" fill="none" stroke="#141d33" stroke-width="6.5"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#38bdf8" stroke-width="6.5" stroke-dasharray="29.4 100" stroke-dashoffset="0.0" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#22d3ee" stroke-width="6.5" stroke-dasharray="16.6 100" stroke-dashoffset="-29.4" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#818cf8" stroke-width="6.5" stroke-dasharray="12.3 100" stroke-dashoffset="-46.0" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#c084fc" stroke-width="6.5" stroke-dasharray="11.7 100" stroke-dashoffset="-58.3" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#5eead4" stroke-width="6.5" stroke-dasharray="7.0 100" stroke-dashoffset="-70.1" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#f0abfc" stroke-width="6.5" stroke-dasharray="22.9 100" stroke-dashoffset="-77.1" transform="rotate(-90 21 21)"/></svg>
+      <svg viewBox="0 0 42 42" style="width:100%;height:100%;"><circle cx="21" cy="21" r="15.9" fill="none" stroke="#141d33" stroke-width="6.5"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#38bdf8" stroke-width="6.5" stroke-dasharray="25.5 100" stroke-dashoffset="0.0" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#22d3ee" stroke-width="6.5" stroke-dasharray="24.2 100" stroke-dashoffset="-25.5" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#818cf8" stroke-width="6.5" stroke-dasharray="22.6 100" stroke-dashoffset="-49.7" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#c084fc" stroke-width="6.5" stroke-dasharray="18.3 100" stroke-dashoffset="-72.3" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#5eead4" stroke-width="6.5" stroke-dasharray="3.8 100" stroke-dashoffset="-90.6" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#f0abfc" stroke-width="6.5" stroke-dasharray="2.0 100" stroke-dashoffset="-94.4" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#556085" stroke-width="6.5" stroke-dasharray="1.9 100" stroke-dashoffset="-96.4" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#38bdf8" stroke-width="6.5" stroke-dasharray="0.9 100" stroke-dashoffset="-98.4" transform="rotate(-90 21 21)"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#22d3ee" stroke-width="6.5" stroke-dasharray="0.7 100" stroke-dashoffset="-99.3" transform="rotate(-90 21 21)"/></svg>
       <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:24px;font-weight:800;color:#eaf0fa;">R$ 18k</div><div style="font-size:10px;color:#6b7a99;letter-spacing:.5px;">total no mês</div></div>
     </div>
-    <div style="width:100%;"><div data-cat="Casa/Moradia" onclick="abreCat(this.dataset.cat)" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
-    <span style="display:flex;align-items:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#38bdf8;margin-right:9px;"></span><span style="font-size:13.5px;color:#dbe3f0;">Casa/Moradia</span></span>
-    <span style="display:flex;align-items:center;gap:8px;"><b style="font-size:13.5px;color:#eaf0fa;">29%</b><span style="color:#5a6785;font-size:15px;">›</span></span></div><div data-cat="Carro" onclick="abreCat(this.dataset.cat)" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
-    <span style="display:flex;align-items:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#22d3ee;margin-right:9px;"></span><span style="font-size:13.5px;color:#dbe3f0;">Carro</span></span>
-    <span style="display:flex;align-items:center;gap:8px;"><b style="font-size:13.5px;color:#eaf0fa;">17%</b><span style="color:#5a6785;font-size:15px;">›</span></span></div><div data-cat="Mercado" onclick="abreCat(this.dataset.cat)" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
-    <span style="display:flex;align-items:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#818cf8;margin-right:9px;"></span><span style="font-size:13.5px;color:#dbe3f0;">Mercado</span></span>
-    <span style="display:flex;align-items:center;gap:8px;"><b style="font-size:13.5px;color:#eaf0fa;">12%</b><span style="color:#5a6785;font-size:15px;">›</span></span></div><div data-cat="Lazer" onclick="abreCat(this.dataset.cat)" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
-    <span style="display:flex;align-items:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#c084fc;margin-right:9px;"></span><span style="font-size:13.5px;color:#dbe3f0;">Lazer</span></span>
-    <span style="display:flex;align-items:center;gap:8px;"><b style="font-size:13.5px;color:#eaf0fa;">12%</b><span style="color:#5a6785;font-size:15px;">›</span></span></div><div data-cat="Restaurante/Lanche" onclick="abreCat(this.dataset.cat)" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
-    <span style="display:flex;align-items:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#5eead4;margin-right:9px;"></span><span style="font-size:13.5px;color:#dbe3f0;">Restaurante/Lanche</span></span>
-    <span style="display:flex;align-items:center;gap:8px;"><b style="font-size:13.5px;color:#eaf0fa;">7%</b><span style="color:#5a6785;font-size:15px;">›</span></span></div><div data-cat="Outros+" onclick="abreCat(this.dataset.cat)" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
-    <span style="display:flex;align-items:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#f0abfc;margin-right:9px;"></span><span style="font-size:13.5px;color:#dbe3f0;">Outros+</span></span>
-    <span style="display:flex;align-items:center;gap:8px;"><b style="font-size:13.5px;color:#eaf0fa;">23%</b><span style="color:#5a6785;font-size:15px;">›</span></span></div></div></div></div>
+    <div style="width:100%;"><div data-macro="Moradia" onclick="abreMacro(this.dataset.macro)" style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="display:flex;align-items:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#38bdf8;margin-right:9px;flex-shrink:0;"></span><span style="font-size:13.5px;color:#dbe3f0;">🏠 Moradia</span></span>
+        <span style="display:flex;align-items:center;gap:7px;"><b style="font-size:13px;color:#eaf0fa;">25%</b><span style="font-size:10.5px;color:#f87171;white-space:nowrap;">R$ 4,6k/R$ 4,5k</span><span style="color:#5a6785;font-size:14px;">›</span></span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:100%;background:#f87171;border-radius:99px;"></div></div>
+    </div><div data-macro="Alimentacao" onclick="abreMacro(this.dataset.macro)" style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="display:flex;align-items:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#22d3ee;margin-right:9px;flex-shrink:0;"></span><span style="font-size:13.5px;color:#dbe3f0;">🍽️ Alimentacao</span></span>
+        <span style="display:flex;align-items:center;gap:7px;"><b style="font-size:13px;color:#eaf0fa;">24%</b><span style="font-size:10.5px;color:#f87171;white-space:nowrap;">R$ 4,4k/R$ 3,0k</span><span style="color:#5a6785;font-size:14px;">›</span></span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:100%;background:#f87171;border-radius:99px;"></div></div>
+    </div><div data-macro="Carro" onclick="abreMacro(this.dataset.macro)" style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="display:flex;align-items:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#818cf8;margin-right:9px;flex-shrink:0;"></span><span style="font-size:13.5px;color:#dbe3f0;">🚗 Carro</span></span>
+        <span style="display:flex;align-items:center;gap:7px;"><b style="font-size:13px;color:#eaf0fa;">23%</b><span style="font-size:10.5px;color:#6b7a99;white-space:nowrap;">R$ 4,1k/R$ 6,2k</span><span style="color:#5a6785;font-size:14px;">›</span></span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:65%;background:linear-gradient(90deg,#38bdf8,#22d3ee);border-radius:99px;"></div></div>
+    </div><div data-macro="Pessoal" onclick="abreMacro(this.dataset.macro)" style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="display:flex;align-items:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#c084fc;margin-right:9px;flex-shrink:0;"></span><span style="font-size:13.5px;color:#dbe3f0;">👤 Pessoal</span></span>
+        <span style="display:flex;align-items:center;gap:7px;"><b style="font-size:13px;color:#eaf0fa;">18%</b><span style="font-size:10.5px;color:#6b7a99;white-space:nowrap;">R$ 3,3k/R$ 3,5k</span><span style="color:#5a6785;font-size:14px;">›</span></span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:93%;background:#facc15;border-radius:99px;"></div></div>
+    </div><div data-macro="Casa" onclick="abreMacro(this.dataset.macro)" style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="display:flex;align-items:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#5eead4;margin-right:9px;flex-shrink:0;"></span><span style="font-size:13.5px;color:#dbe3f0;">🔧 Casa</span></span>
+        <span style="display:flex;align-items:center;gap:7px;"><b style="font-size:13px;color:#eaf0fa;">4%</b><span style="font-size:10.5px;color:#f87171;white-space:nowrap;">R$ 678/R$ 500</span><span style="color:#5a6785;font-size:14px;">›</span></span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:100%;background:#f87171;border-radius:99px;"></div></div>
+    </div><div id="maisMac" style="display:none;"><div data-macro="Saude" onclick="abreMacro(this.dataset.macro)" style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="display:flex;align-items:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#f0abfc;margin-right:9px;flex-shrink:0;"></span><span style="font-size:13.5px;color:#dbe3f0;">❤️ Saude</span></span>
+        <span style="display:flex;align-items:center;gap:7px;"><b style="font-size:13px;color:#eaf0fa;">2%</b><span style="font-size:10.5px;color:#6b7a99;white-space:nowrap;">R$ 370/R$ 1,4k</span><span style="color:#5a6785;font-size:14px;">›</span></span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:26%;background:linear-gradient(90deg,#38bdf8,#22d3ee);border-radius:99px;"></div></div>
+    </div><div data-macro="Lazer" onclick="abreMacro(this.dataset.macro)" style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="display:flex;align-items:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#556085;margin-right:9px;flex-shrink:0;"></span><span style="font-size:13.5px;color:#dbe3f0;">🎉 Lazer</span></span>
+        <span style="display:flex;align-items:center;gap:7px;"><b style="font-size:13px;color:#eaf0fa;">2%</b><span style="font-size:10.5px;color:#6b7a99;white-space:nowrap;">R$ 350/R$ 400</span><span style="color:#5a6785;font-size:14px;">›</span></span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:88%;background:#facc15;border-radius:99px;"></div></div>
+    </div><div data-macro="Pet" onclick="abreMacro(this.dataset.macro)" style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="display:flex;align-items:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#38bdf8;margin-right:9px;flex-shrink:0;"></span><span style="font-size:13.5px;color:#dbe3f0;">🐾 Pet</span></span>
+        <span style="display:flex;align-items:center;gap:7px;"><b style="font-size:13px;color:#eaf0fa;">1%</b><span style="font-size:10.5px;color:#6b7a99;white-space:nowrap;">R$ 170/R$ 500</span><span style="color:#5a6785;font-size:14px;">›</span></span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:34%;background:linear-gradient(90deg,#38bdf8,#22d3ee);border-radius:99px;"></div></div>
+    </div><div data-macro="Viagem" onclick="abreMacro(this.dataset.macro)" style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="display:flex;align-items:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#22d3ee;margin-right:9px;flex-shrink:0;"></span><span style="font-size:13.5px;color:#dbe3f0;">✈️ Viagem</span></span>
+        <span style="display:flex;align-items:center;gap:7px;"><b style="font-size:13px;color:#eaf0fa;">1%</b><span style="font-size:10.5px;color:#6b7a99;white-space:nowrap;">R$ 127/R$ 1,0k</span><span style="color:#5a6785;font-size:14px;">›</span></span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:13%;background:linear-gradient(90deg,#38bdf8,#22d3ee);border-radius:99px;"></div></div>
+    </div></div><div onclick="var e=document.getElementById('maisMac');var v=e.style.display==='none';e.style.display=v?'block':'none';this.innerText=v?'ver menos ▲':'ver mais ▼';" style="text-align:center;color:#7d8aa5;font-size:12px;padding:11px 0 3px;cursor:pointer;font-weight:600;">ver mais ▼</div></div></div></div>
 
   <div class="lbl">Últimos lançamentos</div>
   <div class="click" onclick="abre('lancamentos')" style="margin-bottom:18px;"><div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:13.5px;color:#dbe3f0;">Ralador de queijo <span style="color:#5a6785;font-size:11.5px;">Iara · 30/07</span></span><span style="font-size:13.5px;font-weight:700;color:#eaf0fa;white-space:nowrap;">R$ 30</span></div><div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);"><span style="font-size:13.5px;color:#dbe3f0;">Conta de luz <span style="color:#5a6785;font-size:11.5px;">Iara · 29/07</span></span><span style="font-size:13.5px;font-weight:700;color:#eaf0fa;white-space:nowrap;">R$ 397</span></div><div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;"><span style="font-size:13.5px;color:#dbe3f0;">Ferro de passar a vapor (3x) <span style="color:#5a6785;font-size:11.5px;">Iara · 29/07</span></span><span style="font-size:13.5px;font-weight:700;color:#eaf0fa;white-space:nowrap;">R$ 195</span></div>
