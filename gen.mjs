@@ -498,7 +498,13 @@ function html(d) {
       <span style="display:flex;align-items:center;gap:8px;"><span style="font-size:14px;font-weight:700;color:${cor};">${fmt(c.saldo)}</span><span style="font-size:10px;background:${bg};color:${cor};padding:2px 9px;border-radius:99px;">${badge}</span></span></div>`;
   }).join("") : `<div style="font-size:13px;color:#6b7a99;padding:10px 0;">nenhuma conta cadastrada ainda</div>`;
 
-  const cartoesHTML = d.cartoes.length ? d.cartoes.map((c,i)=>`<div data-cart="${esc(c.nome)}" onclick="event.stopPropagation();abreCartao(this.dataset.cart)" style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;cursor:pointer;${i<d.cartoes.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#aab6cc;">${esc(c.nome)}${c.venc?` · ${esc(c.venc)}`:""}</span><span style="display:flex;align-items:center;gap:7px;"><span style="font-size:13.5px;font-weight:600;color:#eaf0fa;">${c.fatura!=null?fmt(c.fatura):"-"}</span><span style="color:#5a6785;font-size:15px;">›</span></span></div>`).join("") : `<div style="font-size:13px;color:#6b7a99;padding:10px 0;">nenhum cartão com fatura ainda</div>`;
+  const cardsOrd = [...d.cartoes].sort((a,b)=>(b.fatura||0)-(a.fatura||0));
+  const cardLinha = (c,ult)=>`<div data-cart="${esc(c.nome)}" onclick="event.stopPropagation();abreCartao(this.dataset.cart)" style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;cursor:pointer;${!ult?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#aab6cc;">${esc(c.nome)}${c.venc?` · ${esc(c.venc)}`:""}</span><span style="display:flex;align-items:center;gap:7px;"><span style="font-size:13.5px;font-weight:600;color:#eaf0fa;">${c.fatura!=null?fmt(c.fatura):"-"}</span><span style="color:#5a6785;font-size:15px;">›</span></span></div>`;
+  const cards3 = cardsOrd.slice(0,3), cardsResto = cardsOrd.slice(3);
+  const cartoesHTML = d.cartoes.length ? (
+    cards3.map((c,i)=>cardLinha(c,false)).join("") +
+    (cardsResto.length ? `<div id="maisCards" style="display:none;">${cardsResto.map((c,i)=>cardLinha(c,i===cardsResto.length-1)).join("")}</div><div onclick="event.stopPropagation();var e=document.getElementById('maisCards');var v=e.style.display==='none';e.style.display=v?'block':'none';this.innerText=v?'ver menos ▲':'ver mais ▼';" style="text-align:center;color:#7d8aa5;font-size:12px;padding:10px 0 2px;cursor:pointer;font-weight:600;">ver mais ▼</div>` : "")
+  ) : `<div style="font-size:13px;color:#6b7a99;padding:10px 0;">nenhum cartão com fatura ainda</div>`;
 
   const ultimosHTML = d.ultimos.length ? d.ultimos.map((g,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;${i<d.ultimos.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#dbe3f0;">${esc(g.desc)}${g.quem?` <span style="color:#5a6785;font-size:11.5px;">${esc(g.quem)}${g.data?` · ${dataBR(g.data)}`:""}</span>`:""}</span><span style="font-size:13.5px;font-weight:700;color:#eaf0fa;white-space:nowrap;">${fmt(g.val)}</span></div>`).join("") : `<div style="font-size:13px;color:#6b7a99;padding:10px 0;">sem gastos no mês</div>`;
 
@@ -629,8 +635,7 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
     <div style="display:flex;justify-content:flex-end;align-items:center;gap:5px;color:#5a6785;font-size:12px;margin-top:8px;">ver detalhes <span class="chev">›</span></div></div>
 
   <div class="lbl">Cartões · faturas</div>
-  <div class="click" onclick="abre('cartoes')" style="margin-bottom:18px;">${cartoesHTML}
-    <div style="display:flex;justify-content:flex-end;align-items:center;gap:5px;color:#5a6785;font-size:12px;margin-top:8px;">ver detalhes <span class="chev">›</span></div></div>
+  <div style="margin-bottom:18px;">${cartoesHTML}</div>
 
   ${dividasHTML ? `<div class="lbl">Dívidas · empréstimos</div>
   <div class="click" onclick="abre('dividas')" style="background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.12);border-radius:14px;padding:6px 14px;margin-bottom:18px;">${dividasHTML}
