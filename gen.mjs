@@ -444,6 +444,41 @@ function avisoTeto(d){
 }
 function pgMacro(d){ return ""; } // renderizado via JS (abreMacro)
 
+// rosca por MACRO com barrinha uso/teto embutida na legenda (5 principais + ver mais)
+function roscaMacros(d){
+  const macros = (d.macros||[]).filter(m=>m.uso>0);
+  const total = macros.reduce((s,m)=>s+m.uso,0);
+  if(!macros.length||total<=0) return `<div style="font-size:13px;color:#6b7a99;text-align:center;padding:30px;">sem gastos no mês ainda</div>`;
+  let off=0;
+  const segs = macros.map((m,i)=>{
+    const pct=(m.uso/total)*100;
+    const s=`<circle cx="21" cy="21" r="15.9" fill="none" stroke="${CORES[i%CORES.length]}" stroke-width="6.5" stroke-dasharray="${pct.toFixed(1)} 100" stroke-dashoffset="${(-off).toFixed(1)}" transform="rotate(-90 21 21)"/>`;
+    off+=pct; return s;
+  }).join("");
+  const linha = (m,i)=>{
+    const pctTot=Math.round(m.uso/total*100);
+    const pctTeto=m.teto>0?Math.round(m.uso/m.teto*100):0;
+    const estouro=m.uso>m.teto&&m.teto>0;
+    const cor=estouro?"#f87171":pctTeto>85?"#facc15":"linear-gradient(90deg,#38bdf8,#22d3ee)";
+    return `<div data-macro="${esc(m.macro)}" onclick="abreMacro(this.dataset.macro)" style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="display:flex;align-items:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${CORES[i%CORES.length]};margin-right:9px;flex-shrink:0;"></span><span style="font-size:13.5px;color:#dbe3f0;">${m.icon} ${esc(m.macro)}</span></span>
+        <span style="display:flex;align-items:center;gap:7px;"><b style="font-size:13px;color:#eaf0fa;">${pctTot}%</b><span style="font-size:10.5px;color:${estouro?'#f87171':'#6b7a99'};white-space:nowrap;">${fmt(m.uso)}/${fmt(m.teto)}</span><span style="color:#5a6785;font-size:14px;">›</span></span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;"><div style="height:100%;width:${Math.min(100,pctTeto)}%;background:${cor};border-radius:99px;"></div></div>
+    </div>`;
+  };
+  const top5=macros.slice(0,5).map((m,i)=>linha(m,i)).join("");
+  const resto=macros.slice(5).map((m,i)=>linha(m,i+5)).join("");
+  const verMais = resto? `<div id="maisMac" style="display:none;">${resto}</div><div onclick="var e=document.getElementById('maisMac');var v=e.style.display==='none';e.style.display=v?'block':'none';this.innerText=v?'ver menos ▲':'ver mais ▼';" style="text-align:center;color:#7d8aa5;font-size:12px;padding:11px 0 3px;cursor:pointer;font-weight:600;">ver mais ▼</div>` : "";
+  return `<div style="display:flex;flex-direction:column;align-items:center;gap:18px;">
+    <div style="position:relative;width:158px;height:158px;">
+      <svg viewBox="0 0 42 42" style="width:100%;height:100%;"><circle cx="21" cy="21" r="15.9" fill="none" stroke="#141d33" stroke-width="6.5"/>${segs}</svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:24px;font-weight:800;color:#eaf0fa;">${fmt(total)}</div><div style="font-size:10px;color:#6b7a99;letter-spacing:.5px;">total no mês</div></div>
+    </div>
+    <div style="width:100%;">${top5}${verMais}</div></div>`;
+}
+
 // ===== HTML principal =====
 function html(d) {
   const f = foco(d);
@@ -588,10 +623,6 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
   ${avisoTeto(d)}
   ${blocoComparativo(d)}
   ${blocoEssLuxo(d)}
-  <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:16px;padding:6px 16px;margin-bottom:20px;">
-    <div style="font-size:10px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;font-weight:600;padding:12px 0 2px;">Tetos por área · uso vs limite</div>
-    ${barrasMacro(d)}
-  </div>
 
   <div class="lbl">Contas correntes</div>
   <div class="click" onclick="abre('contas')" style="margin-bottom:18px;">${contasHTML}
@@ -609,8 +640,8 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
   <div class="click" onclick="abre('terceiros')" style="background:rgba(192,132,252,.05);border:1px solid rgba(192,132,252,.15);border-radius:14px;padding:6px 14px;margin-bottom:18px;">${tercHTML}
     <div style="display:flex;justify-content:flex-end;align-items:center;gap:5px;color:#5a6785;font-size:12px;padding:8px 0 4px;">ver detalhes <span class="chev">›</span></div></div>` : ""}
 
-  <div class="lbl">Gastos do mês por categoria</div>
-  <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:18px;padding:18px 16px;margin-bottom:18px;">${roscaGrande(d.top5, d.totalGasto)}</div>
+  <div class="lbl">Gastos do mês por área · uso vs teto</div>
+  <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:18px;padding:18px 16px;margin-bottom:18px;">${roscaMacros(d)}</div>
 
   <div class="lbl">Últimos lançamentos</div>
   <div class="click" onclick="abre('lancamentos')" style="margin-bottom:18px;">${ultimosHTML}
