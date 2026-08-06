@@ -49,8 +49,8 @@ const OVERRIDES = [
   { re:/claude\s*max|claude/i, macro:"Trabalho", classe:null, ignora:false, micro:"Ferramenta trabalho" },
   { re:/cons[óo]rcio|embracon/i, macro:"Carro", classe:"Essencial", micro:"Consórcio", divida:true },
   { re:/vitor|lavagem/i, macro:"Carro", classe:"Luxo", micro:"Lavagem" },
-  { re:/personal|t[êe]nis|jorge|tuba|open tenis|clube/i, macro:"Pessoal", classe:"Luxo", micro:"Esporte" },
-  { re:/cabeleireiro|sal[ãa]o|vagner|unha|sobrancelha/i, macro:"Pessoal", classe:"Luxo", micro:"Estética" },
+  { re:/\bpersonal\b|\bt[êe]nis\b|\bjorge\b|\btuba\b|open tenis|\bclube\b/i, macro:"Pessoal", classe:"Luxo", micro:"Esporte" },
+  { re:/cabeleireiro|\bsal[ãa]o\b|\bvagner\b|\bunhas?\b|sobrancelha|manicure/i, macro:"Pessoal", classe:"Luxo", micro:"Estética" },
   { re:/viagem|seattle/i, macro:"Viagem", classe:"Luxo", micro:"Viagem" },
   { re:/apple|icloud|ifood|polo play/i, macro:"Pessoal", classe:"Luxo", micro:"Assinatura pessoal" },
   { re:/lavagem sof[áa]|conserto|ferro de passar|aliexpress|ralador|casad/i, macro:"Casa", classe:"Essencial", micro:"Casa reparos & itens" },
@@ -64,14 +64,22 @@ function classifica(cat, desc){
   for (const o of OVERRIDES){ if (o.re.test(desc||"")){ if(o.macro)macro=o.macro; if(o.classe!==undefined&&o.classe!==null)classe=o.classe; if(o.micro)micro=o.micro; if(o.divida)divida=true; if(o.ignora)ignora=true; break; } }
   return { macro, classe, micro, divida, ignora };
 }
-// tetos por macro (limite mensal). soma ~21.372. renda-ref 18k -> app mostra estouro.
+// tetos por macro (limite mensal). renda-ref 18k -> app mostra estouro.
 const TETOS = {
   Moradia:4528, Casa:500, Alimentacao:3000, Carro:6244, Saude:1450,
-  Pessoal:3550, Lazer:400, Viagem:1000, Pet:500, Outros:200,
+  Pessoal:3550, Lazer:400, Viagem:1000, Pet:500, Trabalho:700, Outros:200,
 };
 // macros que sao consumo (entram em essencial/luxo e barrinhas)
-const MACROS_CONSUMO = ["Moradia","Casa","Alimentacao","Carro","Saude","Pessoal","Lazer","Viagem","Pet","Outros"];
-const MACRO_ICON = { Moradia:"🏠", Casa:"🔧", Alimentacao:"🍽️", Carro:"🚗", Saude:"❤️", Pessoal:"👤", Lazer:"🎉", Viagem:"✈️", Pet:"🐾", Outros:"📦" };
+const MACROS_CONSUMO = ["Moradia","Casa","Alimentacao","Carro","Saude","Pessoal","Lazer","Viagem","Pet","Trabalho","Outros"];
+const MACRO_ICON = { Moradia:"🏠", Casa:"🔧", Alimentacao:"🍽️", Carro:"🚗", Saude:"❤️", Pessoal:"👤", Lazer:"🎉", Viagem:"✈️", Pet:"🐾", Trabalho:"💼", Outros:"📦" };
+
+// ===== canonizacao de macro (o Notion grava com acento, o codigo trabalha sem) =====
+const semAc = s => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const MACRO_CANON = {};
+["Moradia","Casa","Alimentacao","Carro","Saude","Pessoal","Lazer","Viagem","Pet","Trabalho","Outros",
+ "Divida","Taxas","Transferencia","Terceiros","ItemFatura","Duplicado","Investimento"]
+  .forEach(m => { MACRO_CANON[semAc(m).toLowerCase()] = m; });
+const canonMacro = m => MACRO_CANON[semAc(m).toLowerCase().replace(/\s+/g,"")] || (m||"Outros");
 
 // ===== helpers Notion =====
 async function query(db, body={}) {
@@ -117,23 +125,29 @@ async function coletar() {
 
   const hoje = new Date();
   const anoMes = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,"0")}`;
-  const mesRef = mensal.find(p => txt(p,"Ano-Mês") === anoMes) || mensal.sort((a,b)=>txt(b,"Ano-Mês").localeCompare(txt(a,"Ano-Mês")))[0];
-
-  const renda = num(mesRef,"Renda") || 0;
-  const investido = num(mesRef,"Investido") || 0;
-  const meta = renda * 0.1;
+  // renda SEMPRE do mes corrente. se nao existir linha do mes, nao herda do mes passado.
+  const mesRef = mensal.find(p => txt(p,"Ano-Mês") === anoMes) || null;
+  const renda = mesRef ? (num(mesRef,"Renda") || 0) : 0;
+  const rendaPendente = !mesRef || renda <= 0;
+  const investido = mesRef ? (num(mesRef,"Investido") || 0) : 0;
+  const meta = (renda > 0 ? renda : RENDA_REF) * 0.1;
 
   // data do gasto: usa campo Data se existir, senao created_time
   const dataGasto = p => (dateStart(p,"Data") || p.created_time || "").slice(0,10);
   // categorias que NAO sao consumo do casal (nao entram no "Saiu no mes" nem na rosca)
-  const NAO_CONSUMO = ["Transferência","Transferencia","Dívida","Divida","Taxas","Terceiros","Item Fatura","Duplicado"];
+  // trava dura: essas categorias NUNCA sao consumo do casal, nao importa o que a descricao diga
+  const NAO_CONSUMO = ["Transferência","Transferencia","Dívida","Divida","Terceiros","Item Fatura","Duplicado","Investimento","Aporte"];
   // classifica um gasto em macro/classe/micro: usa campo Macro se preenchido, senao deriva da Categoria+Descricao
   const macroDe = p => {
     const m = sel(p,"Macro");
-    if (m) return { macro:m, classe:sel(p,"Classe")||CAT2CLASSE[sel(p,"Categoria")]||null, micro:sel(p,"Categoria")||m, divida:false, ignora:false };
-    return classifica(sel(p,"Categoria"), txt(p,"Descrição"));
+    if (m) return { macro:canonMacro(m), classe:sel(p,"Classe")||CAT2CLASSE[sel(p,"Categoria")]||null, micro:sel(p,"Categoria")||m, divida:false, ignora:false };
+    const c = classifica(sel(p,"Categoria"), txt(p,"Descrição"));
+    return { ...c, macro:canonMacro(c.macro) };
   };
-  const ehConsumo = p => { const c=macroDe(p); return MACROS_CONSUMO.includes(c.macro) && !c.ignora; };
+  const ehConsumo = p => {
+    if (NAO_CONSUMO.includes(sel(p,"Categoria"))) return false;
+    const c = macroDe(p); return MACROS_CONSUMO.includes(c.macro) && !c.ignora;
+  };
   // terceiros (gasto de outra pessoa no cartao do casal) agrupado por nome
   // fontes: base de Gastos (categoria Terceiros) + base Itens de Fatura (campo Terceiro)
   const terceirosMap = {};
@@ -142,12 +156,17 @@ async function coletar() {
     terceirosMap[nome].total += valor||0;
     terceirosMap[nome].itens.push({desc, val:valor||0, data});
   };
-  gastos.filter(p=>sel(p,"Categoria")==="Terceiros").forEach(p=>{
-    const obs = txt(p,"Observação"); const m = obs.match(/Terceiro:\s*(.+)/i);
-    addTerc(m?m[1].trim():"Outro", txt(p,"Descrição")||"?", num(p,"Valor")||0, dataGasto(p));
-  });
-  itensFat.filter(p=>txt(p,"Terceiro")).forEach(p=>{
-    addTerc(txt(p,"Terceiro").trim(), (txt(p,"Compra")||"?")+" · "+txt(p,"Cartão"), num(p,"Valor")||0, (dateStart(p,"Data")||"").slice(0,10));
+  // "a cobrar" = lancamentos Terceiros DO MES corrente, em valor positivo.
+  // o robo grava "Reembolso: NOME" (ou "Terceiro: NOME") na observacao e o valor negativo.
+  // QUITADO sai da conta; "SALDO RESTANTE: R$x" manda no lugar do valor cheio.
+  gastos.filter(p=>sel(p,"Categoria")==="Terceiros" && dataGasto(p).slice(0,7)===anoMes).forEach(p=>{
+    const obs = txt(p,"Observação");
+    if (/quitado/i.test(obs)) return;
+    const m = obs.match(/(?:reembolso|terceiro)\s*:\s*([^\-\n(]+)/i);
+    const nome = (m ? m[1] : "Nao identificado").trim().replace(/\s+/g," ");
+    const ms = obs.match(/SALDO RESTANTE:\s*R?\$?\s*([\d.]+,\d{2}|\d+)/i);
+    const val = ms ? parseFloat(ms[1].replace(/\./g,"").replace(",",".")) : Math.abs(num(p,"Valor")||0);
+    addTerc(nome, txt(p,"Descrição")||"?", val, dataGasto(p));
   });
   const terceiros = Object.values(terceirosMap).sort((a,b)=>b.total-a.total);
   const gastosMes = gastos.filter(p => dataGasto(p).slice(0,7) === anoMes && ehConsumo(p));
@@ -192,11 +211,17 @@ async function coletar() {
   const macros = MACROS_CONSUMO.map(m=>({macro:m, icon:MACRO_ICON[m]||"", uso:macroMap[m]||0, teto:TETOS[m]||0}))
     .filter(x=>x.uso>0 || x.teto>0).sort((a,b)=>b.uso-a.uso);
   const tetoTotal = Object.values(TETOS).reduce((s,v)=>s+v,0);
-  // comparativo mes anterior
+  // comparativo mes anterior: MESMO PERIODO (dia 1 ate o dia de hoje), pra nao comparar 6 dias com um mes inteiro
   const [ay,am] = anoMes.split("-").map(Number);
   const prev = new Date(ay, am-2, 1);
   const anoMesAnt = `${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,"0")}`;
-  const saidasAnt = gastos.filter(p=>dataGasto(p).slice(0,7)===anoMesAnt && ehConsumo(p)).reduce((s,p)=>s+(num(p,"Valor")||0),0);
+  const diaHoje = hoje.getDate();
+  const gastosAnt = gastos.filter(p=>dataGasto(p).slice(0,7)===anoMesAnt && ehConsumo(p));
+  const saidasAntMes = gastosAnt.reduce((s,p)=>s+(num(p,"Valor")||0),0);
+  const saidasAnt = gastosAnt.filter(p=>Number(dataGasto(p).slice(8,10))<=diaHoje).reduce((s,p)=>s+(num(p,"Valor")||0),0);
+  // saida de caixa: consumo + parcelas de divida pagas no mes (divida nao e consumo, mas sai do bolso)
+  const pagoDivida = gastos.filter(p=>dataGasto(p).slice(0,7)===anoMes && macroDe(p).macro==="Divida").reduce((s,p)=>s+(num(p,"Valor")||0),0);
+  const saiuDoBolso = saidas + pagoDivida;
 
   // lancamentos detalhados por categoria (pra pagina interna)
   const lancPorCat = {};
@@ -237,10 +262,28 @@ async function coletar() {
   const parcelados = gastos.map(p=>({desc:txt(p,"Descrição")||"?", val:num(p,"Valor")||0, forma:sel(p,"Forma de pagamento"), quem:sel(p,"Quem pagou"), data:dataGasto(p), parc:parcInfo(txt(p,"Descrição")||"")}))
     .filter(x=>x.parc).sort((a,b)=>(b.data||"").localeCompare(a.data||""));
 
+  // frescor: data do extrato mais antigo entre as contas correntes
+  const datasAtu = contasCC.map(p=>dateStart(p,"Atualizado em")).filter(Boolean).sort();
+  const atuMaisVelha = datasAtu[0] || "";
+  const diasAtraso = atuMaisVelha ? Math.round((hoje - new Date(atuMaisVelha+"T12:00:00"))/864e5) : null;
+  // divida do casal: bruta menos o que terceiros devem (esta dentro das faturas)
+  const tercTotal = terceiros.reduce((s,t)=>s+t.total,0);
+  const dividaBruta = Math.abs(contasCC.filter(p=>(num(p,"Saldo atual")||0)<0).reduce((s,p)=>s+(num(p,"Saldo atual")||0),0))
+    + Math.abs(totalDividas) + totalFaturas;
+  const dividaLiquida = dividaBruta - tercTotal;
+  // faturas vencendo nos proximos 5 dias
+  const venceEm = c => { const m=String(txt(c,"Vencimento")||"").match(/(\d{1,2})/); if(!m) return null;
+    const dia=+m[1]; let d=new Date(hoje.getFullYear(),hoje.getMonth(),dia);
+    if (d < new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate())) d=new Date(hoje.getFullYear(),hoje.getMonth()+1,dia);
+    return { dia, faltam: Math.round((d-new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate()))/864e5) }; };
+  const vencendo = cartoes.map(c=>{ const v=venceEm(c); return v&&v.faltam<=5 ? {nome:txt(c,"Nome"), dia:v.dia, faltam:v.faltam, valor:num(c,"Fatura atual")||0} : null; })
+    .filter(x=>x&&x.valor>0).sort((a,b)=>a.faltam-b.faltam);
+
   return {
-    anoMes, renda, saidas, sobra, investido, meta,
+    anoMes, renda, rendaPendente, saidas, sobra, investido, meta,
+    pagoDivida, saiuDoBolso, tercTotal, dividaBruta, dividaLiquida, atuMaisVelha, diasAtraso, vencendo, saidasAntMes, diaHoje,
     contaInvest: contaInvest ? { nome:txt(contaInvest,"Nome"), saldo:num(contaInvest,"Saldo atual")||0 } : null,
-    contasCC: contasCC.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), saldo:num(p,"Saldo atual"), situ:sel(p,"Situação"), obs:txt(p,"Observação")})),
+    contasCC: contasCC.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), saldo:num(p,"Saldo atual"), situ:sel(p,"Situação"), obs:txt(p,"Observação"), atu:dateStart(p,"Atualizado em")})),
     dividas: dividas.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), saldo:num(p,"Saldo atual"), obs:txt(p,"Observação")})),
     cartoes: cartoes.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), venc:txt(p,"Vencimento"), fatura:num(p,"Fatura atual"), limite:num(p,"Limite"), itens: itensDoCartao(txt(p,"Nome"))})),
     parcelados,
@@ -258,12 +301,15 @@ function foco(d) {
     const falta = Math.abs(negativas.reduce((s,c)=>s+(c.saldo||0),0));
     return { cor:"#f87171", txt:`Atenção: ${fmtFull(falta)} no vermelho. Prioridade é zerar isso.` };
   }
-  if (d.renda > 0 && d.investido < d.meta) {
+  if (d.investido < d.meta) {
     const falta = d.meta - d.investido;
     return { cor:"#facc15", txt:`Faltam ${fmtFull(falta)} pra bater a meta de investimento do mês (10%).` };
   }
-  if (d.sobra > 0) {
+  if (!d.rendaPendente && d.sobra > 0) {
     return { cor:"#38bdf8", txt:`Mês saudável, sobra de ${fmtFull(d.sobra)}. Meta batida!` };
+  }
+  if (d.rendaPendente) {
+    return { cor:"#38bdf8", txt:`Renda do mês ainda não apurada. Os gastos já estão contando.` };
   }
   return { cor:"#facc15", txt:`Gastos passaram da renda esse mês. Revisem os maiores gastos.` };
 }
@@ -342,7 +388,7 @@ function pgDivida(d) {
   const parcelas = (d.dividas||[]).filter(c=>(c.saldo||0)<0);
   const dividaContas = Math.abs(negativas.reduce((s,c)=>s+(c.saldo||0),0));
   const dividaParcelas = Math.abs(parcelas.reduce((s,c)=>s+(c.saldo||0),0));
-  const dividaTotal = dividaContas + dividaParcelas + d.totalFaturas;
+  const dividaTotal = d.dividaLiquida;
   const passos = [
     ...negativas.map(c=>({nome:`Zerar ${c.nome}`, val:Math.abs(c.saldo||0)})),
     ...parcelas.map(c=>({nome:c.nome, val:Math.abs(c.saldo||0)})),
@@ -353,9 +399,10 @@ function pgDivida(d) {
     <span style="flex:1;font-size:15px;color:#dbe3f0;">${esc(p.nome)}</span>
     <span style="font-size:15px;font-weight:700;color:#f87171;">${fmtFull(p.val)}</span></div>`).join("") : `<div style="font-size:15px;color:#34d399;padding:20px 0;text-align:center;">Nada no vermelho. Parabéns! 🎉</div>`;
   return `<div style="text-align:center;margin:8px 0 22px;">
-      <div style="font-size:13px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;">Dívida total</div>
+      <div style="font-size:13px;color:#7d8aa5;letter-spacing:1px;text-transform:uppercase;">Dívida do casal</div>
       <div style="font-size:44px;font-weight:800;color:${dividaTotal>0?'#f87171':'#34d399'};letter-spacing:-1.5px;margin-top:4px;">${fmtFull(dividaTotal)}</div>
       <div style="font-size:13px;color:#6b7a99;margin-top:6px;">contas ${fmtFull(dividaContas)} · faturas ${fmtFull(d.totalFaturas)}${dividaParcelas>0?` · parcelas ${fmtFull(dividaParcelas)}`:""}</div>
+      ${d.tercTotal>0?`<div style="font-size:13px;color:#c084fc;margin-top:4px;">menos ${fmtFull(d.tercTotal)} de terceiros dentro das faturas</div>`:""}
     </div>
     <div class="lbl">Plano de quitação · do menor pro maior</div>
     <div>${passosHTML}</div>`;
@@ -418,20 +465,20 @@ function barrasMacro(d){
 }
 function blocoComparativo(d){
   const at=d.saidas||0, ant=d.saidasAnt||0;
-  // só compara se o mês anterior tiver base de verdade (>=50% do atual). senão mostra só o deste mês.
-  const temBase = ant>0 && ant >= at*0.5;
+  // compara o MESMO periodo do mes passado (dia 1 ate hoje). sem isso, 6 dias vs mes inteiro = falsa melhora.
+  const temBase = ant>0;
   const dif=at-ant;
-  const seta = dif>0?"▲":dif<0?"▼":"—"; const cor=dif>0?"#f87171":"#34d399";
-  const sub = temBase ? `<span style="color:${cor};font-weight:700;">${seta} ${fmt(Math.abs(dif))}</span> <span style="color:#6b7a99;">vs mês passado</span>` : `<span style="color:#6b7a99;">começa a comparar quando fechar o próximo mês</span>`;
+  const seta = dif>0?"▲":dif<0?"▼":"=";  const cor=dif>0?"#f87171":"#34d399";
+  const sub = temBase ? `<span style="color:${cor};font-weight:700;">${seta} ${fmtFull(Math.abs(dif))}</span> <span style="color:#6b7a99;">vs dia ${d.diaHoje} do mês passado</span>` : `<span style="color:#6b7a99;">sem base do mês passado pra comparar</span>`;
   return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
     <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;">
       <div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Renda referência</div>
-      <div style="font-size:18px;font-weight:800;margin-top:3px;color:#eaf0fa;">${fmt(d.rendaRef)}</div>
+      <div style="font-size:18px;font-weight:800;margin-top:3px;color:#eaf0fa;">${fmtFull(d.rendaRef)}</div>
       <div style="font-size:10.5px;color:#6b7a99;margin-top:2px;">média do casal</div>
     </div>
     <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;">
-      <div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Gasto este mês</div>
-      <div style="font-size:18px;font-weight:800;margin-top:3px;color:#eaf0fa;">${fmt(at)}</div>
+      <div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Consumo até hoje</div>
+      <div style="font-size:18px;font-weight:800;margin-top:3px;color:#eaf0fa;">${fmtFull(at)}</div>
       <div style="font-size:10.5px;margin-top:2px;">${sub}</div>
     </div>
   </div>`;
@@ -508,6 +555,13 @@ function html(d) {
     cards3.map((c,i)=>cardLinha(c,false)).join("") +
     (cardsResto.length ? `<div id="maisCards" style="display:none;">${cardsResto.map((c,i)=>cardLinha(c,i===cardsResto.length-1)).join("")}</div><div onclick="event.stopPropagation();var e=document.getElementById('maisCards');var v=e.style.display==='none';e.style.display=v?'block':'none';this.innerText=v?'ver menos ▲':'ver mais ▼';" style="text-align:center;color:#7d8aa5;font-size:12px;padding:10px 0 2px;cursor:pointer;font-weight:600;">ver mais ▼</div>` : "")
   ) : `<div style="font-size:13px;color:#6b7a99;padding:10px 0;">nenhum cartão com fatura ainda</div>`;
+
+  // faixa de vencimento proximo (fatura em ate 5 dias)
+  const venceHTML = (d.vencendo||[]).length ? `<div style="background:rgba(250,204,21,.09);border:1px solid rgba(250,204,21,.3);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+    ${d.vencendo.map(v=>`<div style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:#f5e0a3;">
+      <span>⏰ ${esc(v.nome)} vence dia ${String(v.dia).padStart(2,"0")}${v.faltam===0?" (hoje)":v.faltam===1?" (amanhã)":` (em ${v.faltam} dias)`}</span>
+      <b style="white-space:nowrap;">${fmtFull(v.valor)}</b></div>`).join("")}
+  </div>` : "";
 
   const ultimosHTML = d.ultimos.length ? d.ultimos.map((g,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;${i<d.ultimos.length-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#dbe3f0;">${esc(g.desc)}${g.quem?` <span style="color:#5a6785;font-size:11.5px;">${esc(g.quem)}${g.data?` · ${dataBR(g.data)}`:""}</span>`:""}</span><span style="font-size:13.5px;font-weight:700;color:#eaf0fa;white-space:nowrap;">${fmt(g.val)}</span></div>`).join("") : `<div style="font-size:13px;color:#6b7a99;padding:10px 0;">sem gastos no mês</div>`;
 
@@ -597,6 +651,7 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
       <span class="chev">›</span>
     </div>
     <div style="font-size:clamp(26px,8vw,34px);font-weight:800;letter-spacing:-1px;line-height:1.05;color:${d.totalContas>=0?'#34d399':'#f87171'};margin-top:2px;white-space:nowrap;">${fmtFull(d.totalContas)}</div>
+    ${d.atuMaisVelha?`<div style="font-size:11px;margin-top:5px;color:${d.diasAtraso>7?'#facc15':'#6b7a99'};">extrato de ${dataBR(d.atuMaisVelha)}${d.diasAtraso>7?` · ${d.diasAtraso} dias atrás, vale atualizar`:""}</div>`:""}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;">
       <div style="background:rgba(0,0,0,.22);border-radius:12px;padding:12px;">
         <div style="font-size:11px;color:#8a97b3;text-transform:uppercase;letter-spacing:.5px;">Wes</div>
@@ -615,13 +670,16 @@ body{background:#05070d;font-family:'Outfit',system-ui,sans-serif;min-height:100
   </div>
 
   <div class="click" onclick="abre('divida')" style="background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.15);border-radius:12px;padding:13px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
-    <span style="font-size:12px;color:#7d8aa5;text-transform:uppercase;letter-spacing:.6px;">Dívida total</span>
-    <span style="display:flex;align-items:center;gap:8px;flex-shrink:0;"><span style="font-size:17px;font-weight:800;color:${posGeral>=0?'#34d399':'#f87171'};white-space:nowrap;">${fmtFull(posGeral)}</span><span class="chev">›</span></span>
+    <span style="font-size:12px;color:#7d8aa5;text-transform:uppercase;letter-spacing:.6px;">Dívida do casal</span>
+    <span style="display:flex;align-items:center;gap:8px;flex-shrink:0;"><span style="font-size:17px;font-weight:800;color:#f87171;white-space:nowrap;">${fmtFull(d.dividaLiquida)}</span><span class="chev">›</span></span>
   </div>
+  ${d.tercTotal>0?`<div style="font-size:11px;color:#6b7a99;margin:-8px 2px 14px;">bruto ${fmtFull(d.dividaBruta)} menos ${fmtFull(d.tercTotal)} que terceiros devem</div>`:""}
+
+  ${venceHTML}
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Entrou no mês</div><div style="font-size:18px;font-weight:800;margin-top:3px;color:#eaf0fa;">${fmt(d.renda)}</div></div>
-    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Gasto real no mês</div><div style="font-size:18px;font-weight:800;margin-top:3px;color:#eaf0fa;">${fmt(d.saidas)}</div></div>
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Entrou no mês</div><div style="font-size:18px;font-weight:800;margin-top:3px;color:${d.rendaPendente?'#7d8aa5':'#eaf0fa'};">${d.rendaPendente?"a apurar":fmt(d.renda)}</div></div>
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Consumo no mês</div><div style="font-size:18px;font-weight:800;margin-top:3px;color:#eaf0fa;">${fmtFull(d.saidas)}</div>${d.pagoDivida>0?`<div style="font-size:10px;color:#6b7a99;margin-top:2px;">+ ${fmtFull(d.pagoDivida)} de dívida = ${fmtFull(d.saiuDoBolso)} do bolso</div>`:""}</div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
     <div style="background:rgba(255,255,255,.02);border-radius:12px;padding:11px;"><div style="font-size:10px;color:#6b7a99;text-transform:uppercase;letter-spacing:.6px;">Fixo</div><div style="font-size:16px;font-weight:700;margin-top:2px;color:#818cf8;">${fmt(d.fixoMes||0)}</div></div>
