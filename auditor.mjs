@@ -89,15 +89,22 @@ const corrigidos = [], suspeitos = [];
 
 // ---------- 1. fixa (provisao) contra pagamento real ----------
 const fixas = gastos.filter(p => tipo(p) === "Fixo");
-const reais = gastos.filter(p => tipo(p) !== "Fixo" && val(p) > 0);
+const FORA_REAL = ["Terceiros", "Transferencia", "Transferência", "Divida", "Dívida", "Taxas", "Investimento"];
+const reais = gastos.filter(p => tipo(p) !== "Fixo" && val(p) > 0 && !FORA_REAL.includes(cat(p)));
 for (const f of fixas) {
   const nome = txt(f);
   if (SO_CARTAO.includes(nome)) continue;
   const par = PARES.find(x => norm(x.fixa) === norm(nome));
   if (!par) continue;
   const mes = dat(f).slice(0, 7);
-  const achado = reais.find(r => dat(r).slice(0, 7) === mes && par.pistas.some(pi => norm(txt(r)).includes(norm(pi))));
-  if (!achado) continue;
+  const faixaOk = v => v >= val(f) * 0.6 && v <= val(f) * 1.6;
+  const casa = r => dat(r).slice(0, 7) === mes && par.pistas.some(pi => norm(txt(r)).includes(norm(pi)));
+  const achado = reais.find(r => casa(r) && faixaOk(val(r)));
+  if (!achado) {
+    const quase = reais.find(casa);
+    if (quase) suspeitos.push(`fixa ${nome} ${mes} R$ ${val(f).toFixed(2)}: achei "${txt(quase)}" R$ ${val(quase).toFixed(2)}, valor muito diferente. Confere se e a mesma conta.`);
+    continue;
+  }
   const motivo = `Auditor: provisao substituida pelo pagamento real "${txt(achado)}" de R$ ${val(achado).toFixed(2)} em ${dat(achado)}`;
   if (await marcaDuplicado(f, motivo)) corrigidos.push(`fixa ${nome} ${mes} (R$ ${val(f).toFixed(2)}) -> real R$ ${val(achado).toFixed(2)}`);
 }
@@ -110,7 +117,10 @@ for (const g of gastos) {
   (porChave[k] = porChave[k] || []).push(g);
 }
 const toks = s => norm(s).replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(t => t.length >= 4);
+const parc = s => { const m = norm(s).match(/(\d+)\s*(?:\/|de)\s*(\d+)/); return m ? m[1] + "/" + m[2] : ""; };
 const parecido = (a, b) => {
+  const pa = parc(a), pb = parc(b);
+  if (pa && pb && pa !== pb) return false;   // 1/2 e 2/2 sao parcelas diferentes, nao duplicata
   const na = norm(a), nb = norm(b);
   if (na === nb || na.includes(nb) || nb.includes(na)) return true;
   const ta = toks(a), tb = toks(b);
