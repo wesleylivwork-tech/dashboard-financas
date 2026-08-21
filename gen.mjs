@@ -56,6 +56,43 @@ const OVERRIDES = [
   { re:/lavagem sof[áa]|conserto|ferro de passar|aliexpress|ralador|casad/i, macro:"Casa", classe:"Essencial", micro:"Casa reparos & itens" },
   { re:/fatech|correios|pix empresa|pix gabriel|f[áa]bio rog/i, ignora:true },
 ];
+// ===== DICIONARIO DE ESTABELECIMENTOS (v1, 21/08/2026) =====
+// Nome do lugar -> macro / classe / micro. VENCE o que o robo escreveu no Notion.
+// Cada linha foi confirmada por CNPJ na web ou pelo nome completo no app do Itau.
+// Pra corrigir um lugar em TODOS os lancamentos de uma vez, edite AQUI, nao no Notion.
+// Nao se aplica a Terceiros, Divida, Transferencia, Investimento, Item Fatura e Duplicado.
+const DICIONARIO = [
+  // mercado de verdade
+  { re:/savegnago|sumerbol|covabra|\bsonda\b|pao de a[cç]ucar|supermercado pagu|supermercado restaura|garcia bersanet|gerbeli/i, macro:"Alimentacao", classe:"Essencial", micro:"Mercado" },
+  // padaria
+  { re:/gianini|panificadora|panific/i, macro:"Alimentacao", classe:"Luxo", micro:"Padaria" },
+  // conveniencia de posto e adega
+  { re:/recreio ouro|ora pois|vmt.{0,2}quick|rr vinhos/i, macro:"Alimentacao", classe:"Luxo", micro:"Conveniencia" },
+  // restaurante, lanche e delivery
+  { re:/meu sushi|rezende restaurante|restaurantetomate|restaurante tomate|katatau|me gusta|salgadosdidi|mc.?donald|axolotl|jrl hamburgueria|pizzaria|cm de sousa|salgaderia/i, macro:"Alimentacao", classe:"Luxo", micro:"Restaurante" },
+  // estetica e barbearia
+  { re:/wolk barber|blue skin|oboticario/i, macro:"Pessoal", classe:"Luxo", micro:"Estetica" },
+  // carro
+  { re:/auto posto|comercial de comb|posto indiana|fox rodas|thorck|chavao auto/i, macro:"Carro", classe:"Essencial", micro:"Combustivel e pecas" },
+  { re:/sem parar|viamonaco/i, macro:"Carro", classe:"Essencial", micro:"Pedagio" },
+  { re:/uber/i, macro:"Carro", classe:"Essencial", micro:"Transporte" },
+  // lazer
+  { re:/hopi hari|eventim/i, macro:"Lazer", classe:"Luxo", micro:"Passeio" },
+  // casa
+  { re:/flamar embalagens/i, macro:"Casa", classe:"Essencial", micro:"Utensilios" },
+  // moradia
+  { re:/arganet/i, macro:"Moradia", classe:"Essencial", micro:"Internet" },
+  { re:/conta vivo|app vivo|celulares/i, macro:"Moradia", classe:"Essencial", micro:"Celular" },
+  // trabalho
+  { re:/hostinger|z-api|anthropic|claude max/i, macro:"Trabalho", classe:"Essencial", micro:"Ferramenta trabalho" },
+  // pet
+  { re:/petlove|bicos e focinhos|hospital veter/i, macro:"Pet", classe:"Essencial", micro:"Pet" },
+];
+function noDicionario(desc, lugar){
+  const alvo = String(desc||"") + " " + String(lugar||"");
+  for (const d of DICIONARIO) if (d.re.test(alvo)) return d;
+  return null;
+}
 function classifica(cat, desc){
   let macro = CAT2MACRO[cat] || "Outros";
   let classe = CAT2CLASSE[cat] || null;
@@ -139,9 +176,17 @@ async function coletar() {
   const NAO_CONSUMO = ["Transferência","Transferencia","Dívida","Divida","Terceiros","Item Fatura","Duplicado","Investimento","Aporte"];
   // classifica um gasto em macro/classe/micro: usa campo Macro se preenchido, senao deriva da Categoria+Descricao
   const macroDe = p => {
+    const cat = sel(p,"Categoria");
+    // 1) DICIONARIO DE ESTABELECIMENTOS vence, menos nas categorias que nao sao consumo
+    if (!NAO_CONSUMO.includes(cat)) {
+      const d = noDicionario(txt(p,"Descrição"), txt(p,"Lugar"));
+      if (d) return { macro:canonMacro(d.macro), classe:d.classe, micro:d.micro, divida:false, ignora:false };
+    }
+    // 2) campo Macro do Notion
     const m = sel(p,"Macro");
-    if (m) return { macro:canonMacro(m), classe:sel(p,"Classe")||CAT2CLASSE[sel(p,"Categoria")]||null, micro:sel(p,"Categoria")||m, divida:false, ignora:false };
-    const c = classifica(sel(p,"Categoria"), txt(p,"Descrição"));
+    if (m) return { macro:canonMacro(m), classe:sel(p,"Classe")||CAT2CLASSE[cat]||null, micro:cat||m, divida:false, ignora:false };
+    // 3) deriva da Categoria + Descricao
+    const c = classifica(cat, txt(p,"Descrição"));
     return { ...c, macro:canonMacro(c.macro) };
   };
   const ehConsumo = p => {
