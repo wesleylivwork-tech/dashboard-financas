@@ -63,9 +63,9 @@ const OVERRIDES = [
 // Nao se aplica a Terceiros, Divida, Transferencia, Investimento, Item Fatura e Duplicado.
 const DICIONARIO = [
   // mercado de verdade
-  { re:/savegnago|sumerbol|covabra|\bsonda\b|pao de a[cç]ucar|supermercado pagu|supermercado restaura|garcia bersanet|gerbeli/i, macro:"Alimentacao", classe:"Essencial", micro:"Mercado" },
+  { re:/savegnago|sumerbol|covabra|\bsonda\b|pao de a[cç]ucar|supermercado pagu|supermercado restaura|garcia bersanet|elieudo/i, macro:"Alimentacao", classe:"Essencial", micro:"Mercado" },
   // padaria
-  { re:/gianini|panificadora|panific/i, macro:"Alimentacao", classe:"Luxo", micro:"Padaria" },
+  { re:/gianini|panificadora|panific|gerbeli/i, macro:"Alimentacao", classe:"Luxo", micro:"Padaria e confeitaria" },
   // conveniencia de posto e adega
   { re:/recreio ouro|ora pois|vmt.{0,2}quick|rr vinhos/i, macro:"Alimentacao", classe:"Luxo", micro:"Conveniencia" },
   // restaurante, lanche e delivery
@@ -79,7 +79,7 @@ const DICIONARIO = [
   // lazer
   { re:/hopi hari|eventim/i, macro:"Lazer", classe:"Luxo", micro:"Passeio" },
   // casa
-  { re:/flamar embalagens/i, macro:"Casa", classe:"Essencial", micro:"Utensilios" },
+  { re:/flamar embalagens/i, macro:"Casa", classe:"Luxo", micro:"Utensilios" },
   // moradia
   { re:/arganet/i, macro:"Moradia", classe:"Essencial", micro:"Internet" },
   { re:/conta vivo|app vivo|celulares/i, macro:"Moradia", classe:"Essencial", micro:"Celular" },
