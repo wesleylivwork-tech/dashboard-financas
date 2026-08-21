@@ -63,11 +63,11 @@ const OVERRIDES = [
 // Nao se aplica a Terceiros, Divida, Transferencia, Investimento, Item Fatura e Duplicado.
 const DICIONARIO = [
   // mercado de verdade
-  { re:/savegnago|sumerbol|covabra|\bsonda\b|pao de a[cç]ucar|supermercado pagu|supermercado restaura|garcia bersanet|elieudo/i, macro:"Alimentacao", classe:"Essencial", micro:"Mercado" },
+  { re:/savegnago|sumerbol|covabra|\bsonda\b|pao de a[cç]ucar|supermercado pagu|supermercado restaura|elieudo/i, macro:"Alimentacao", classe:"Essencial", micro:"Mercado" },
   // padaria
   { re:/gianini|panificadora|panific|gerbeli/i, macro:"Alimentacao", classe:"Luxo", micro:"Padaria e confeitaria" },
   // conveniencia de posto e adega
-  { re:/recreio ouro|ora pois|vmt.{0,2}quick|rr vinhos/i, macro:"Alimentacao", classe:"Luxo", micro:"Conveniencia" },
+  { re:/recreio ouro|ora pois|vmt.{0,2}quick|rr vinhos|garcia bersanet/i, macro:"Alimentacao", classe:"Luxo", micro:"Conveniencia" },
   // restaurante, lanche e delivery
   { re:/meu sushi|rezende restaurante|restaurantetomate|restaurante tomate|katatau|me gusta|salgadosdidi|mc.?donald|axolotl|jrl hamburgueria|pizzaria|cm de sousa|salgaderia/i, macro:"Alimentacao", classe:"Luxo", micro:"Restaurante" },
   // estetica e barbearia
