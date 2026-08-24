@@ -230,7 +230,9 @@ async function coletar() {
   const dividas = contas.filter(p => sel(p,"Tipo")==="Conta corrente" && ehDivida(p));
   const cartoes = contas.filter(p => sel(p,"Tipo")==="Cartão de crédito");
   const totalContas = contasCC.reduce((s,p)=> s + (num(p,"Saldo atual")||0), 0);
-  const totalFaturas = cartoes.reduce((s,p)=> s + (num(p,"Fatura atual")||0), 0);
+  // fatura ja paga NAO entra na divida, mesmo que alguem esqueca de zerar o valor
+  const faturaEmAberto = p => sel(p,"Situacao")==="Fatura paga" || sel(p,"Situação")==="Fatura paga" ? 0 : (num(p,"Fatura atual")||0);
+  const totalFaturas = cartoes.reduce((s,p)=> s + faturaEmAberto(p), 0);
   const totalDividas = dividas.reduce((s,p)=> s + (num(p,"Saldo atual")||0), 0);
 
   // saldo por titular (conta principal de cada um) pro destaque do topo
