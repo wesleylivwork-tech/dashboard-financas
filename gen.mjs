@@ -212,10 +212,10 @@ async function coletar() {
     const m = obs.match(/(?:reembolso|terceiro)\s*:\s*([^\-\n(]+)/i);
     const nome = (m ? m[1] : "Nao identificado").trim().replace(/\s+/g," ");
     const ms = obs.match(/SALDO RESTANTE:\s*R?\$?\s*([\d.]+,\d{2}|\d+)/i);
-    const val = ms ? parseFloat(ms[1].replace(/\./g,"").replace(",",".")) : Math.abs(num(p,"Valor")||0);
+    const val = ms ? parseFloat(ms[1].replace(/\./g,"").replace(",",".")) : -(num(p,"Valor")||0);
     addTerc(nome, txt(p,"Descrição")||"?", val, dataGasto(p));
   });
-  const terceiros = Object.values(terceirosMap).sort((a,b)=>b.total-a.total);
+  const terceiros = Object.values(terceirosMap).filter(t=>t.total>0.01).sort((a,b)=>b.total-a.total);
   const gastosMes = gastos.filter(p => dataGasto(p).slice(0,7) === anoMes && ehConsumo(p));
   const saidas = gastosMes.reduce((s,p)=> s + (num(p,"Valor")||0), 0);
   const sobra = renda - saidas;
