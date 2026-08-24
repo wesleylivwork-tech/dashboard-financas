@@ -304,8 +304,20 @@ async function coletar() {
 
   // parcelados (compras em Nx / N/N / "parcela") pra aba Dividas
   const parcInfo = desc => { const m=desc.match(/\((\d+)\s*x\)/i); if(m) return m[1]+"x"; const n=desc.match(/\((\d+)\/(\d+)\)/); if(n) return n[1]+"/"+n[2]; if(/parcel/i.test(desc)) return "parcelado"; return null; };
-  const parcelados = gastos.map(p=>({desc:txt(p,"Descrição")||"?", val:num(p,"Valor")||0, forma:sel(p,"Forma de pagamento"), quem:sel(p,"Quem pagou"), data:dataGasto(p), parc:parcInfo(txt(p,"Descrição")||"")}))
-    .filter(x=>x.parc).sort((a,b)=>(b.data||"").localeCompare(a.data||""));
+  const tokDiv = dividas.map(p => (txt(p,"Nome")||"").toLowerCase().split(/[\s\-,.]+/).filter(w=>w.length>=4)[0]).filter(Boolean);
+  const jaEhDivida = desc => tokDiv.some(t => String(desc||"").toLowerCase().includes(t));
+  const parcelados = gastos
+    .filter(p => dataGasto(p).slice(0,7)===anoMes)
+    .filter(p => { const c=sel(p,"Categoria"); return !NAO_CONSUMO.includes(c) || /d[ií]vida/i.test(c); })
+    .filter(p => !jaEhDivida(txt(p,"Descrição")))
+    .map(p => {
+      const desc=txt(p,"Descrição")||"?", val=num(p,"Valor")||0, parc=parcInfo(desc);
+      const m=String(parc||"").match(/^(\d+)\/(\d+)$/);
+      const faltam = m ? Math.max(0,(+m[2])-(+m[1])) : null;
+      return {desc, val, parcela:val, faltam, saldo: faltam!=null ? val*faltam : val,
+              forma:sel(p,"Forma de pagamento"), quem:sel(p,"Quem pagou"), data:dataGasto(p), parc};
+    })
+    .filter(x => x.parc && x.val>0).sort((a,b)=>b.saldo-a.saldo);
 
   // frescor: data do extrato mais antigo entre as contas correntes
   const datasAtu = contasCC.map(p=>dateStart(p,"Atualizado em")).filter(Boolean).sort();
@@ -329,7 +341,7 @@ async function coletar() {
     pagoDivida, saiuDoBolso, tercTotal, dividaBruta, dividaLiquida, atuMaisVelha, diasAtraso, vencendo, saidasAntMes, diaHoje,
     contaInvest: contaInvest ? { nome:txt(contaInvest,"Nome"), saldo:num(contaInvest,"Saldo atual")||0 } : null,
     contasCC: contasCC.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), saldo:num(p,"Saldo atual"), situ:sel(p,"Situação"), obs:txt(p,"Observação"), atu:dateStart(p,"Atualizado em")})),
-    dividas: dividas.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), saldo:num(p,"Saldo atual"), obs:txt(p,"Observação")})),
+    dividas: dividas.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), saldo:num(p,"Saldo atual"), obs:txt(p,"Observação"), pagas:num(p,"Parcelas pagas"), totais:num(p,"Parcelas totais"), quita:dateStart(p,"Quita em")})),
     cartoes: cartoes.map(p=>({nome:txt(p,"Nome"), banco:sel(p,"Banco"), titular:sel(p,"Titular"), venc:txt(p,"Vencimento"), fatura:num(p,"Fatura atual"), limite:num(p,"Limite"), itens: itensDoCartao(txt(p,"Nome"))})),
     parcelados,
     totalContas, totalFaturas, totalDividas, top5, ultimos, ultimos3d, lancPorCat, aportes,
@@ -619,9 +631,17 @@ function html(d) {
     const fim = new Date(hoje.getFullYear(), hoje.getMonth()+faltam, 1);
     return `faltam ${faltam} · acaba ${fim.toLocaleDateString("pt-BR",{month:"short",year:"2-digit"}).replace(".","")}`;
   };
+  const mesBR = dt => dt.toLocaleDateString("pt-BR",{month:"short",year:"2-digit"}).replace(".","");
+  const prazoDivida = c => {
+    const bits=[];
+    if(c.pagas!=null && c.totais!=null) bits.push(`faltam ${Math.max(0,c.totais-c.pagas)} de ${c.totais}`);
+    else if(c.pagas!=null) bits.push(`${c.pagas} pagas`);
+    if(c.quita) bits.push(`acaba ${mesBR(new Date(c.quita+"T12:00:00"))}`);
+    return bits.join(" · ");
+  };
   const itensDiv = [
-    ...(d.dividas||[]).map(c=>({desc:c.nome, tag:c.banco||"empréstimo", val:Math.abs(c.saldo||0), prazo:""})),
-    ...(d.parcelados||[]).map(p=>({desc:p.desc, tag:p.parc, val:p.val, prazo:prazoQuit(p.parc)})),
+    ...(d.dividas||[]).map(c=>({desc:c.nome, tag:(c.pagas!=null&&c.totais!=null)?`${c.pagas}ª de ${c.totais}`:(c.banco||"empréstimo"), val:Math.abs(c.saldo||0), prazo:prazoDivida(c)})),
+    ...(d.parcelados||[]).map(p=>({desc:p.desc, tag:p.parc, val:p.saldo, prazo:[prazoQuit(p.parc), (p.faltam!=null&&p.faltam>0)?`${fmt(p.parcela)}/mês`:""].filter(Boolean).join(" · ")})),
   ].sort((a,b)=>b.val-a.val);
   const linhaDiv = (c,i,n)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;${i<n-1?'border-bottom:1px solid rgba(255,255,255,.05);':''}"><span style="font-size:13.5px;color:#dbe3f0;">${esc(c.desc)}${c.tag?` <span style="color:#5a6785;font-size:11.5px;">${esc(c.tag)}</span>`:""}${c.prazo?`<br><span style="color:#5eead4;font-size:11px;">${c.prazo}</span>`:""}</span><span style="font-size:13.5px;font-weight:700;color:#f87171;white-space:nowrap;">${fmt(c.val)}</span></div>`;
   const dividasTop = itensDiv.slice(0,3);
