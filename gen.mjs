@@ -138,6 +138,8 @@ const num = (p,n) => { const v=p?.properties?.[n]; return v && typeof v.number==
 const txt = (p,n) => { const a=p?.properties?.[n]?.rich_text || p?.properties?.[n]?.title || []; return a[0]?.plain_text || ""; };
 const sel = (p,n) => p?.properties?.[n]?.select?.name || "";
 const dateStart = (p,n) => p?.properties?.[n]?.date?.start || "";
+const MESES_BR=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+const mesAno = dt => MESES_BR[dt.getMonth()]+"/"+String(dt.getFullYear()).slice(2);
 
 // ===== formatacao =====
 const fmt = v => {
@@ -303,7 +305,7 @@ async function coletar() {
   };
 
   // parcelados (compras em Nx / N/N / "parcela") pra aba Dividas
-  const parcInfo = desc => { const m=desc.match(/\((\d+)\s*x\)/i); if(m) return m[1]+"x"; const n=desc.match(/\((\d+)\/(\d+)\)/); if(n) return n[1]+"/"+n[2]; if(/parcel/i.test(desc)) return "parcelado"; return null; };
+  const parcInfo = desc => { const m=desc.match(/\((\d+)\s*x\)/i); if(m) return m[1]+"x"; const n=desc.match(/\((\d+)\/(\d+)\)/); if(n) return n[1]+"/"+n[2]; const b=desc.match(/(?:^|[^\d\/])(\d{1,2})\s*\/\s*(\d{1,3})(?![\d\/])/); if(b) return b[1]+"/"+b[2]; if(/parcel/i.test(desc)) return "parcelado"; return null; };
   const tokDiv = dividas.map(p => (txt(p,"Nome")||"").toLowerCase().split(/[\s\-,.]+/).filter(w=>w.length>=4)[0]).filter(Boolean);
   const jaEhDivida = desc => tokDiv.some(t => String(desc||"").toLowerCase().includes(t));
   const parcelados = gastos
@@ -629,14 +631,13 @@ function html(d) {
     const faltam = (+m[2]) - (+m[1]);
     if(faltam<=0) return "última parcela";
     const fim = new Date(hoje.getFullYear(), hoje.getMonth()+faltam, 1);
-    return `faltam ${faltam} · acaba ${fim.toLocaleDateString("pt-BR",{month:"short",year:"2-digit"}).replace(".","")}`;
+    return `faltam ${faltam} · acaba ${mesAno(fim)}`;
   };
-  const mesBR = dt => dt.toLocaleDateString("pt-BR",{month:"short",year:"2-digit"}).replace(".","");
   const prazoDivida = c => {
     const bits=[];
-    if(c.pagas!=null && c.totais!=null) bits.push(`faltam ${Math.max(0,c.totais-c.pagas)} de ${c.totais}`);
+    if(c.pagas!=null && c.totais!=null) bits.push(`faltam ${Math.max(0,c.totais-c.pagas)}`);
     else if(c.pagas!=null) bits.push(`${c.pagas} pagas`);
-    if(c.quita) bits.push(`acaba ${mesBR(new Date(c.quita+"T12:00:00"))}`);
+    if(c.quita) bits.push(`acaba ${mesAno(new Date(c.quita+"T12:00:00"))}`);
     return bits.join(" · ");
   };
   const itensDiv = [
